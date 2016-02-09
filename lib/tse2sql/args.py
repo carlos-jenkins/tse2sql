@@ -68,7 +68,10 @@ def parse_args(argv=None):
     from argparse import ArgumentParser
 
     parser = ArgumentParser(
-        description='Convertidor a SQL del padrón electoral publicado en CSV por el Tribunal Supremo de Elecciones'
+        description=(
+            'Convertidor a SQL del padrón electoral publicado en CSV por el '
+            'Tribunal Supremo de Elecciones'
+        )
     )
     parser.add_argument(
         '-v', '--verbose',
@@ -79,7 +82,9 @@ def parse_args(argv=None):
     parser.add_argument(
         '--version',
         action='version',
-        version='Convertidor del Padron Electoral a SQL v{}'.format(__version__)
+        version='Convertidor del Padron Electoral a SQL v{}'.format(
+            __version__
+        )
     )
 
     args = parser.parse_args(argv)
