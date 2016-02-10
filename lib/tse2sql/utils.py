@@ -84,7 +84,8 @@ def download(url, subdir=None):
     size = int(response.headers['content-length'])
     log.info('File is {:.2f} MBs long, downloading...'.format(size / 1000000))
 
-    name, ext = splitext(basename(url))
+    filename = basename(url)
+    name, ext = splitext(filename)
     directory = gettempdir()
     if subdir is not None:
         directory = join(directory, subdir)
@@ -100,7 +101,10 @@ def download(url, subdir=None):
     }
     total = 0
     with NamedTemporaryFile(**tmpopts) as fd:
-        with tqdm(total=size, unit='B', unit_scale=True, leave=True) as pbar:
+        with tqdm(
+                total=size, unit='B', unit_scale=True,
+                leave=True, desc=filename
+                ) as pbar:
             for block in response.iter_content():
                 bytes_read = len(block)
                 total += bytes_read
