@@ -98,7 +98,9 @@ def parse_args(argv=None):
 
     parser.add_argument(
         'archive',
-        help='URL or path to the voters database'
+        nargs='?',
+        help='URL or path to the voters database',
+        default='http://www.tse.go.cr/zip/padron/padron_completo.zip'
     )
 
     args = parser.parse_args(argv)
