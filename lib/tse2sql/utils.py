@@ -23,16 +23,33 @@ from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
 from os import makedirs
+from zipfile import ZipFile
 from logging import getLogger
 from hashlib import sha256 as sha256lib
-from os.path import basename, splitext, join
 from tempfile import NamedTemporaryFile, gettempdir
+from os.path import basename, abspath, splitext, join
+
+from six.moves.urllib.parse import urlparse
 
 from tqdm import tqdm
 from requests import get
 
 
 log = getLogger(__name__)
+
+
+CHUNK_SIZE = 2**10
+
+
+def is_url(url):
+    """
+    Deterime if given string is an url.
+
+    :param str url: String to check if its a URL.
+    :return: True if its an URL, False otherwise.
+    :rtype: bool
+    """
+    return urlparse(url).scheme != ''
 
 
 def ensure_dir(path):
@@ -83,12 +100,12 @@ def download(url, subdir=None):
     }
     total = 0
     with NamedTemporaryFile(**tmpopts) as fd:
-        with tqdm(total=size, unit='B', unit_scale=True) as pbar:
-            for data in response.iter_content():
-                chunk = len(data)
-                total += chunk
-                pbar.update(chunk)
-                fd.write(data)
+        with tqdm(total=size, unit='B', unit_scale=True, leave=True) as pbar:
+            for block in response.iter_content():
+                bytes_read = len(block)
+                total += bytes_read
+                pbar.update(bytes_read)
+                fd.write(block)
 
     log.info(
         'Done. File saved in {} ({:.2f})MBs'.format(
@@ -98,12 +115,11 @@ def download(url, subdir=None):
     return fd.name
 
 
-def sha256(filename, chunk_size=2**10):
+def sha256(filename):
     """
     Calculate SHA256 of given filename.
 
     :param str filename: Filename to calculate SHA256 from.
-    :param int chunk_size: Maximum size of the buffer used to read the file.
     :return: SHA256 hexidecimal digest.
     :rtype: str
     """
@@ -111,9 +127,80 @@ def sha256(filename, chunk_size=2**10):
 
     with open(filename, 'rb') as fd:
         while True:
-            block = fd.read(chunk_size)
+            block = fd.read(CHUNK_SIZE)
             if not block:
                 break
             sha.update(block)
 
-    return sha.hexdigest()
+    digest = sha.hexdigest()
+    log.info('File {} has a SHA256 digest of {}'.format(filename, digest))
+    return digest
+
+
+def unzip(filename):
+    """
+    Unzip given filename.
+
+    The extraction folder will be determined by the archive filename removing
+    the extension, including it's parent folder.
+
+    :param str filename: Path to the zip to extract.
+    :return: The path where the archive was extracted.
+    :rtype: str
+    """
+    def determine_extract_path(member, extract_dir):
+        # FIXME: Make this secure and cross-platform
+        return join(extract_dir, member.filename)
+
+    filename = abspath(filename)
+    extract_dir = splitext(filename)[0]
+
+    with ZipFile(filename, 'r') as zhandler:
+        # Test zip file
+        if zhandler.testzip():
+            raise Exception('Zip file {} is corrupt.'.format(filename))
+
+        # Ensure extraction directory now that we know the archive is valid
+        ensure_dir(extract_dir)
+
+        # Determine file uncompressed size
+        members = zhandler.infolist()
+        size = sum(m.file_size for m in members)
+
+        # Progress bar
+        with tqdm(
+                total=size, unit='B', unit_scale=True,
+                leave=True, desc=basename(filename)) as pbar:
+
+            # Extract each member
+            for member in members:
+
+                # Determine extraction path
+                extract_path = determine_extract_path(member, extract_dir)
+
+                # Create directory if required
+                if member.filename[-1] == '/':
+                    ensure_dir(extract_path)
+                    continue
+
+                with zhandler.open(member) as compressed, \
+                        open(extract_path, 'wb') as uncompressed:
+
+                    while True:
+                        block = compressed.read(CHUNK_SIZE)
+                        if not block:
+                            break
+                        bytes_read = len(block)
+                        pbar.update(bytes_read)
+                        uncompressed.write(block)
+
+    return extract_dir
+
+
+__all__ = [
+    'is_url',
+    'ensure_dir',
+    'download',
+    'sha256',
+    'unzip'
+]

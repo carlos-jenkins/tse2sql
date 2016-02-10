@@ -22,10 +22,17 @@ Application entry point module.
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
-import logging
+from os.path import join
+from logging import getLogger
+
+from .utils import is_url, download, sha256, unzip
 
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
+
+
+DISTRICTS_FILE = 'Distelec.txt'
+VOTERS_FILE = 'PADRON_COMPLETO.txt'
 
 
 def main(args):
@@ -37,6 +44,26 @@ def main(args):
     :return: Exit code.
     :rtype: int
     """
+    # Download archive if required
+    archive = args.archive
+    if is_url(archive):
+        archive = download(archive)
+
+    # Calculate digest and unzip archive
+    digest = sha256(archive)
+    extracted = unzip(archive)
+
+    # List sources
+    sources = {
+        'districts': join(extracted, DISTRICTS_FILE),
+        'voters': join(extracted, VOTERS_FILE)
+    }
+
+    # Generate SQL output
+    with open(digest + '.sql', 'w') as sql_output:
+        # FIXME: Implement SQL conversion
+        sql_output.write('Wait for it...\n {}'.format(sources))
+
     return 0
 
 

@@ -23,8 +23,10 @@ from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
 import logging
+from os.path import isfile, abspath
 
 from . import __version__
+from .utils import is_url
 
 
 log = logging.getLogger(__name__)
@@ -52,6 +54,13 @@ def validate_args(args):
     logging.basicConfig(format=FORMAT, level=level)
 
     log.debug('Raw arguments:\n{}'.format(args))
+
+    # Verify archive file exists
+    if not is_url(args.archive):
+        if not isfile(args.archive):
+            log.error('No such file : {}'.format(args.archive))
+            exit(1)
+        args.archive = abspath(args.archive)
 
     return args
 
@@ -85,6 +94,11 @@ def parse_args(argv=None):
         version='Convertidor del Padron Electoral a SQL v{}'.format(
             __version__
         )
+    )
+
+    parser.add_argument(
+        'archive',
+        help='URL or path to the voters database'
     )
 
     args = parser.parse_args(argv)
