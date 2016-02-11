@@ -25,6 +25,7 @@ from __future__ import print_function, division
 from logging import getLogger
 
 from .utils import is_url, download, sha256, unzip
+from .readers import DistrictsReader
 
 
 log = getLogger(__name__)
@@ -47,6 +48,14 @@ def main(args):
     # Calculate digest and unzip archive
     digest = sha256(archive)
     extracted = unzip(archive)
+
+    # Parse files
+    distelec = DistrictsReader(extracted)
+    distelec.parse()
+
+    # Debug
+    # print(distelec._provinces)
+    # print(distelec._cantons)
 
     # Generate SQL output
     with open(digest + '.sql', 'w') as sql_output:

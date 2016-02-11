@@ -35,7 +35,6 @@ from inflection import titleize
 log = getLogger(__name__)
 
 
-DISTRICTS_FILE = 'distelec.txt'
 VOTERS_FILE = 'padron_completo.txt'
 
 
@@ -116,7 +115,10 @@ class DistrictsReader(object):
                         self._provinces[province_code] = province_name
 
                     # Insert canton
-                    canton_code = (code % 100000) // 1000
+                    canton_code = (
+                        province_code,
+                        (code % 100000) // 1000
+                    )
                     canton_name = titleize(parts[2].strip())
 
                     if canton_code in self._cantons:
@@ -125,7 +127,10 @@ class DistrictsReader(object):
                         self._cantons[canton_code] = canton_name
 
                     # Insert district
-                    district_code = code % 1000
+                    district_code = (
+                        canton_code,
+                        code % 1000
+                    )
                     district_name = titleize(parts[3].strip())
                     if district_code in self._districts:
                         assert self._districts[district_code] == district_name
@@ -161,7 +166,8 @@ class VotersReader(object):
         100753618,111005,2,20220109,01168,ETELVINA                      ,PARRA                     ,SALAZAR
         100763791,108007,1,20190831,00971,REINALDO                      ,MENDEZ                    ,BARBOZA
 
-    It is encoded in ``ISO-8859-15`` and uses Windows CRLF line terminators.
+    - It lists all the voters in Costa Rica, ... FIXME
+    - It is encoded in ``ISO-8859-15`` and uses Windows CRLF line terminators.
     """  # noqa
 
     def __init__(self, search_dir):
