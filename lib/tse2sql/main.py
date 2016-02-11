@@ -22,6 +22,7 @@ Application entry point module.
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
+from json import dumps
 from logging import getLogger
 
 from .utils import is_url, download, sha256, unzip
@@ -50,9 +51,15 @@ def main(args):
     digest = sha256(archive)
     extracted = unzip(archive)
 
-    # Parse files
+    # Parse distelec file
     distelec = DistrictsReader(extracted)
     distelec.parse()
+
+    # Save analysis file
+    analysis = dumps(distelec.analyse(), sort_keys=True, indent=4)
+    log.info('Distelec analysis:\n{}'.format(analysis))
+    with open('{}.data'.format(digest), 'w') as fd:
+        fd.write(analysis)
 
     # voters = VotersReader(extracted, distelec)
     # voters.open()

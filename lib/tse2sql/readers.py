@@ -88,12 +88,20 @@ class DistrictsReader(object):
     def __init__(self, search_dir):
         self._search_dir = search_dir
         self._filename = get_file(search_dir, 'Distelec.txt')
+        self._bad_data = []
         self.provinces = OrderedDict()
         self.cantons = OrderedDict()
         self.districts = OrderedDict()
 
     def parse(self):
         """
+        Open and parse the ``Distelec.txt`` file.
+
+        After parsing the following attributes will be available:
+
+        :var provinces:
+        :var cantons:
+        :var districts:
         """
         with open_with_encoding(self._filename, 'rb', 'iso8859-15') as fd:
             for linenum, line in enumerate(fd):
@@ -128,6 +136,7 @@ class DistrictsReader(object):
 
                     # Insert district
                     district_code = (
+                        province_code,
                         canton_code,
                         code % 1000
                     )
@@ -138,6 +147,7 @@ class DistrictsReader(object):
                         self.districts[district_code] = district_name
 
                 except Exception:
+                    self._bad_data.append(linenum)
                     log.error(
                         'Distelec.txt :: Bad data at line #{}'.format(
                             linenum, line
@@ -145,6 +155,47 @@ class DistrictsReader(object):
                     )
                     log.debug(format_exc())
                     continue
+
+    def analyse(self):
+        """
+        Return a small report with some basic analysis of the tables.
+
+        :return: A dictionary with the analysis of data provided by the parsed
+         file. In particular, the amount of provinces, cantons and districts,
+         the largest name of those, and the bad lines found.
+        :rtype: A dict of the form:
+         ::
+
+            analysis = {
+                'provinces': ...,
+                'provinces_extended': ...,
+                'province_largest': ...,
+                'cantons': ...,
+                'cantons_extended': ...,
+                'cantons_largest': ...,
+                'districts': ...,
+                'districts_extended': ...,
+                'districts_largest': ...,
+                'bad_data': ...
+            }
+        """
+        def count_exclude_consulates(dictionary):
+            return sum(1 for key in dictionary if key[0] != 8)
+
+        analysis = {
+            # This will hardly change, anyhow...
+            'provinces': len(self.provinces) - 1,
+            'provinces_extended': len(self.provinces),
+            'province_largest': max(self.provinces.values(), key=len),
+            'cantons': count_exclude_consulates(self.cantons),
+            'cantons_extended': len(self.cantons),
+            'cantons_largest': max(self.cantons.values(), key=len),
+            'districts': count_exclude_consulates(self.districts),
+            'districts_extended': len(self.districts),
+            'districts_largest': max(self.districts.values(), key=len),
+            'bad_data': self._bad_data
+        }
+        return analysis
 
 
 class VotersReader(object):
