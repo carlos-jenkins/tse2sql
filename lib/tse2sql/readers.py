@@ -88,9 +88,9 @@ class DistrictsReader(object):
     def __init__(self, search_dir):
         self._search_dir = search_dir
         self._filename = get_file(search_dir, 'Distelec.txt')
-        self._provinces = OrderedDict()
-        self._cantons = OrderedDict()
-        self._districts = OrderedDict()
+        self.provinces = OrderedDict()
+        self.cantons = OrderedDict()
+        self.districts = OrderedDict()
 
     def parse(self):
         """
@@ -109,10 +109,10 @@ class DistrictsReader(object):
                     province_code = code // 100000
                     province_name = titleize(parts[1].strip())
 
-                    if province_code in self._provinces:
-                        assert self._provinces[province_code] == province_name
+                    if province_code in self.provinces:
+                        assert self.provinces[province_code] == province_name
                     else:
-                        self._provinces[province_code] = province_name
+                        self.provinces[province_code] = province_name
 
                     # Insert canton
                     canton_code = (
@@ -121,10 +121,10 @@ class DistrictsReader(object):
                     )
                     canton_name = titleize(parts[2].strip())
 
-                    if canton_code in self._cantons:
-                        assert self._cantons[canton_code] == canton_name
+                    if canton_code in self.cantons:
+                        assert self.cantons[canton_code] == canton_name
                     else:
-                        self._cantons[canton_code] = canton_name
+                        self.cantons[canton_code] = canton_name
 
                     # Insert district
                     district_code = (
@@ -132,10 +132,10 @@ class DistrictsReader(object):
                         code % 1000
                     )
                     district_name = titleize(parts[3].strip())
-                    if district_code in self._districts:
-                        assert self._districts[district_code] == district_name
+                    if district_code in self.districts:
+                        assert self.districts[district_code] == district_name
                     else:
-                        self._districts[district_code] = district_name
+                        self.districts[district_code] = district_name
 
                 except Exception:
                     log.error(

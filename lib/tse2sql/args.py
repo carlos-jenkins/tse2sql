@@ -27,6 +27,7 @@ from os.path import isfile, abspath
 
 from . import __version__
 from .utils import is_url
+from .render import list_templates
 
 
 log = logging.getLogger(__name__)
@@ -94,6 +95,13 @@ def parse_args(argv=None):
         version='Convertidor del Padron Electoral a SQL v{}'.format(
             __version__
         )
+    )
+
+    parser.add_argument(
+        '--template',
+        default=None,
+        help='SQL template to use',
+        choices=list_templates()
     )
 
     parser.add_argument(

@@ -26,6 +26,7 @@ from logging import getLogger
 
 from .utils import is_url, download, sha256, unzip
 from .readers import DistrictsReader
+from .render import list_templates, render
 
 
 log = getLogger(__name__)
@@ -53,18 +54,29 @@ def main(args):
     distelec = DistrictsReader(extracted)
     distelec.parse()
 
-    # Debug
-    # print(distelec._provinces)
-    # print(distelec._cantons)
+    # voters = VotersReader(extracted, distelec)
+    # voters.open()
+
+    # Get list of templates to render
+    if args.template is None:
+        templates = list_templates()
+    else:
+        templates = [args.template]
+
+    # Build rendering payload
+    payload = {
+        'extracted': extracted,
+        'digest': digest,
+        'provinces': distelec.provinces,
+        'cantons': distelec.cantons,
+        'districts': distelec.districts,
+        # 'voters': voters
+    }
 
     # Generate SQL output
-    with open(digest + '.sql', 'w') as sql_output:
-        # FIXME: Implement SQL conversion
-        sql_output.write(
-            'Wait for it...\nExtracted: {}  Digest: {}\n'.format(
-                extracted, digest
-            )
-        )
+    for tpl in templates:
+        with open('{}.{}.sql'.format(digest, tpl), 'w') as sql_output:
+            sql_output.write(render(tpl, payload))
 
     return 0
 
