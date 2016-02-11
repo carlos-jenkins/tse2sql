@@ -24,7 +24,12 @@ from __future__ import print_function, division
 
 from os import listdir
 from logging import getLogger
+from traceback import format_exc
 from os.path import abspath, join
+from collections import OrderedDict
+from codecs import open as open_with_encoding
+
+from inflection import titleize
 
 
 log = getLogger(__name__)
@@ -34,36 +39,17 @@ DISTRICTS_FILE = 'distelec.txt'
 VOTERS_FILE = 'padron_completo.txt'
 
 
-class FileReader(object):
+def get_file(search_dir, filename):
     """
+    Get file asdas
     """
-    def __init__(self, filename, search_dir, encoding='utf-8'):
-        self._filename = None
-        self._fd = None
+    filematch = filename.lower()
 
-        # Search for file
-        for fnm in listdir(search_dir):
-            if fnm.lower() == filename:
-                self._filename = abspath(join(search_dir, fnm))
-                break
-        else:
-            raise Exception(
-                'No such file {}'.format(filename)
-            )
+    for fnm in listdir(search_dir):
+        if fnm.lower() == filematch:
+            return abspath(join(search_dir, fnm))
 
-    def __enter__(self):
-        self._fd = open(self._filename, 'rb')
-        return self
-
-    def __exit__(self, type, value, traceback):
-        if self._fd:
-            self._fd.close()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        next()
+    raise Exception('No such file: {}'.format(filename))
 
 
 class DistrictsReader(object):
@@ -81,11 +67,79 @@ class DistrictsReader(object):
         101005,SAN JOSE,CENTRAL,MATA REDONDA
         101006,SAN JOSE,CENTRAL,PAVAS
 
-    It is encoded in ``ISO-8859-15`` and uses Windows CRLF line terminators.
+    - It list the provinces, cantons and districts of Costa Rica.
+    - It is encoded in ``ISO-8859-15`` and uses Windows CRLF line terminators.
+    - It is quite stable. It will only change when Costa Rica districts change
+      (quite uncommon, but happens from time to time).
+    - It is relatively small. Costa Rica has 81 cantons, and ~6 or so
+      districts per canton. As of 2016, Costa Rica has 478 districts.
+      As this writting, the CSV file is 172KB in size.
+    - The semantics of the code is as following:
+
+      ::
+
+          <province(1 digit)><canton(2 digits)><district(3 digits)>
+
+    This class will lookup for the file and will process it completely in main
+    memory in order to build provinces, cantons and districts tables at the
+    same time. Also, the file will be processed even if some lines are
+    malformed. Any error will be logged as such.
     """
 
     def __init__(self, search_dir):
-        super(DistrictsReader, self).__init__(DISTRICTS_FILE, search_dir)
+        self._search_dir = search_dir
+        self._filename = get_file(search_dir, 'Distelec.txt')
+        self._provinces = OrderedDict()
+        self._cantons = OrderedDict()
+        self._districts = OrderedDict()
+
+    def parse(self):
+        """
+        """
+        with open_with_encoding(self._filename, 'rb', 'iso8859-15') as fd:
+            for linenum, line in enumerate(fd):
+                line = line.strip()
+                try:
+                    parts = line.split(',')
+                    assert len(parts) == 4
+
+                    # Get codes
+                    code = int(parts[0])
+
+                    # Insert province
+                    province_code = code // 100000
+                    province_name = titleize(parts[1].strip())
+
+                    if province_code in self._provinces:
+                        assert self._provinces[province_code] == province_name
+                    else:
+                        self._provinces[province_code] = province_name
+
+                    # Insert canton
+                    canton_code = (code % 100000) // 1000
+                    canton_name = titleize(parts[2].strip())
+
+                    if canton_code in self._cantons:
+                        assert self._cantons[canton_code] == canton_name
+                    else:
+                        self._cantons[canton_code] = canton_name
+
+                    # Insert district
+                    district_code = code % 1000
+                    district_name = titleize(parts[3].strip())
+                    if district_code in self._districts:
+                        assert self._districts[district_code] == district_name
+                    else:
+                        self._districts[district_code] = district_name
+
+                except Exception:
+                    log.error(
+                        'Distelec.txt :: Bad data at line #{}'.format(
+                            linenum, line
+                        )
+                    )
+                    log.debug(format_exc())
+                    continue
 
 
 class VotersReader(object):
