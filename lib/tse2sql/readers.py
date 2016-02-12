@@ -79,6 +79,10 @@ class DistrictsReader(object):
 
           <province(1 digit)><canton(2 digits)><district(3 digits)>
 
+      Please note that only the province code is unique. Both canton and
+      districts codes are reused and thus depend on the value of the previous
+      code.
+
     This class will lookup for the file and will process it completely in main
     memory in order to build provinces, cantons and districts tables at the
     same time. Also, the file will be processed even if some lines are

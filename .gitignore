@@ -16,5 +16,13 @@ doc/tse2sql/*
 .cache/*
 .coverage
 
+# MySQL
+*.mwb.bak
+
+# SQL
+*.data.json
+*.mysql.sql
+*.sqlite.sql
+
 # Misc
 *~

@@ -58,7 +58,7 @@ def main(args):
     # Save analysis file
     analysis = dumps(distelec.analyse(), sort_keys=True, indent=4)
     log.info('Distelec analysis:\n{}'.format(analysis))
-    with open('{}.data'.format(digest), 'w') as fd:
+    with open('{}.data.json'.format(digest), 'w') as fd:
         fd.write(analysis)
 
     # voters = VotersReader(extracted, distelec)
