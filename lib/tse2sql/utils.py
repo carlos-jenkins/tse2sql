@@ -103,9 +103,8 @@ def download(url, subdir=None):
     with NamedTemporaryFile(**tmpopts) as fd:
         with tqdm(
                 total=size, unit='B', unit_scale=True,
-                leave=True, desc=filename
-                ) as pbar:
-            for block in response.iter_content():
+                leave=True, desc=filename) as pbar:
+            for block in response.iter_content(chunk_size=CHUNK_SIZE):
                 bytes_read = len(block)
                 total += bytes_read
                 pbar.update(bytes_read)
