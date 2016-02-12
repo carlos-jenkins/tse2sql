@@ -76,21 +76,15 @@ You will need a functional MySQL server install, see:
 
     https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-ubuntu-14-04
 
-Then you need to create the database and user:
+Load the database and create a user for it:
 
 ::
 
     $ mysql -u root -p
-    mysql> CREATE DATABASE tse2sql;
+    mysql> source [DIGEST].mysql.sql;
     mysql> GRANT ALL PRIVILEGES ON tse2sql.* TO 'tse2sql'@'localhost' IDENTIFIED BY 'PUTYOURKEYHERE';
 
-Finally, load the schema and data from the generated file:
-
-::
-
-    mysql -u root -p tse2sql < [DIGEST].mysql.sql
-
-Loading the database will take several minutes.
+Sourcing the database will take several minutes.
 
 
 Contributing
