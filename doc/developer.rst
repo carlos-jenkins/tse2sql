@@ -26,6 +26,27 @@ Setup Development Environment
       git config flake8.strict true
 
 
+Launching executable from repository
+====================================
+
+To execute ``tse2sql`` from the repository you can:
+
+#. Install dependencies system-wide:
+
+   ::
+
+      sudo pip install -r requirements.txt
+      PYTHONPATH=lib/ bin/tse2sql
+
+#. Load the ``py34`` virtual environment:
+
+   ::
+
+      tox -e py34
+      source .tox/py34/bin/activate
+      PYTHONPATH=lib/ bin/tse2sql
+
+
 Building Documentation
 ======================
 

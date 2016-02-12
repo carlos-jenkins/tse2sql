@@ -64,6 +64,10 @@ When run, ``tse2sql`` will create a few files in the current working directory:
  the largest name of those, and the bad lines found.
 :``<digest>.<template>.sql``: The SQL version of the database.
 
+The whole process, downloading, extracting, parsing and writing the output
+will take several minutes to finish. ``tse2sql`` was optimized for memory
+usage, so expect high CPU usage while writing the outputs.
+
 
 MySQL
 +++++
@@ -85,6 +89,8 @@ Finally, load the schema and data from the generated file:
 ::
 
     mysql -u root -p tse2sql < [DIGEST].mysql.sql
+
+Loading the database will take several minutes.
 
 
 Contributing
