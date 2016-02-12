@@ -37,7 +37,7 @@ Usage
 
     $ pip install tse2sql
     $ tse2sql --help
-    usage: tse2sql [-h] [-v] [--version] [--template {mysql,sqlite}] [archive]
+    usage: tse2sql [-h] [-v] [--version] [--renderer {mysql}] [archive]
 
     Convertidor a SQL del padrón electoral publicado en CSV por el Tribunal
     Supremo de Elecciones
@@ -49,8 +49,7 @@ Usage
       -h, --help            show this help message and exit
       -v, --verbose         Increase verbosity level
       --version             show program's version number and exit
-      --template {mysql,sqlite}
-                            SQL template to use
+      --renderer {mysql}  SQL renderer to use
 
 
 Where ``archive`` can be left empty and the known URL where the voters database
@@ -62,7 +61,7 @@ When run, ``tse2sql`` will create a few files in the current working directory:
 :``<digest>.data.sjon``: Analysis of the ``Distelec.txt`` data. This JSON file
  provides a dictionary the amount of provinces, cantons and districts,
  the largest name of those, and the bad lines found.
-:``<digest>.<template>.sql``: The SQL version of the database.
+:``<digest>.<renderer>.sql``: The SQL version of the database.
 
 The whole process, downloading, extracting, parsing and writing the output
 will take several minutes to finish. ``tse2sql`` was optimized for memory
@@ -81,7 +80,7 @@ Load the database and create a user for it:
 ::
 
     $ mysql -u root -p
-    mysql> source [DIGEST].mysql.sql;
+    mysql> SET @start := NOW(); source short.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);
     mysql> GRANT ALL PRIVILEGES ON tse2sql.* TO 'tse2sql'@'localhost' IDENTIFIED BY 'PUTYOURKEYHERE';
 
 Sourcing the database will take several minutes.
