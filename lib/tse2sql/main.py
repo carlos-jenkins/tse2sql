@@ -82,6 +82,7 @@ def main(args):
 
     # Generate SQL output
     for tpl in templates:
+        log.info('Writing template {} ...'.format(tpl))
         with open('{}.{}.sql'.format(digest, tpl), 'w') as sql_output:
             sql_output.write(render(tpl, payload))
 

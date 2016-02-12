@@ -127,28 +127,23 @@ class DistrictsReader(object):
                         self.provinces[province_code] = province_name
 
                     # Insert canton
-                    canton_code = (
-                        province_code,
-                        (code % 100000) // 1000
-                    )
+                    canton_code = (code % 100000) // 1000
+                    canton_key = (province_code, canton_code)
                     canton_name = titleize(parts[2].strip())
 
                     if canton_code in self.cantons:
-                        assert self.cantons[canton_code] == canton_name
+                        assert self.cantons[canton_key] == canton_name
                     else:
-                        self.cantons[canton_code] = canton_name
+                        self.cantons[canton_key] = canton_name
 
                     # Insert district
-                    district_code = (
-                        province_code,
-                        canton_code,
-                        code % 1000
-                    )
+                    district_code = code % 1000
+                    district_key = (province_code, canton_code, district_code)
                     district_name = titleize(parts[3].strip())
                     if district_code in self.districts:
-                        assert self.districts[district_code] == district_name
+                        assert self.districts[district_key] == district_name
                     else:
-                        self.districts[district_code] = district_name
+                        self.districts[district_key] = district_name
 
                 except Exception:
                     self._bad_data.append(linenum)

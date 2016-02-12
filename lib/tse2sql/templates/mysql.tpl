@@ -90,9 +90,16 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `tsesql`;
-INSERT INTO `tsesql`.`canton` (`id_canton`, `name`, `province_id_province`) VALUES (101, 'Central', 1);
+
+{% if cantons -%}
+INSERT INTO `tsesql`.`canton` (`id_canton`, `name`, `province_id_province`)
+{%- for (province_code, canton_code), name in cantons.items() %}
+    ({{province_code}}{{'{:02d}'.format(canton_code)}}, '{{name}}', {{province_code}}){% if not loop.last %},{% endif %}
+{%- endfor -%}
+;
 
 COMMIT;
+{%- endif %}
 
 
 -- -----------------------------------------------------
@@ -100,6 +107,13 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `tsesql`;
-INSERT INTO `tsesql`.`district` (`id_district`, `name`, `canton_id_canton`) VALUES (101001, 'Hospital', 101);
+
+{% if districts -%}
+INSERT INTO `tsesql`.`district` (`id_district`, `name`, `canton_id_canton`) VALUES
+{%- for (province_code, canton_code, district_code), name in districts.items() %}
+    ({{province_code}}{{'{:02d}'.format(canton_code)}}{{'{:03d}'.format(district_code)}}, '{{name}}', {{province_code}}{{'{:02d}'.format(canton_code)}}){% if not loop.last %},{% endif %}
+{%- endfor -%}
+;
 
 COMMIT;
+{%- endif %}
