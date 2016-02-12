@@ -139,7 +139,7 @@ def write_provinces(fd, provinces):
     fd.write(SECTION_HEADER.format(name='province'))
     for province_code, name in provinces.items():
         fd.write('INSERT INTO province VALUES (')
-        fd.write(province_code)
+        fd.write(str(province_code))
         fd.write(', \'')
         fd.write(name)
         fd.write('\');\n')
@@ -152,12 +152,12 @@ def write_cantons(fd, cantons):
     fd.write(SECTION_HEADER.format(name='canton'))
     for (province_code, canton_code), name in cantons.items():
         fd.write('INSERT INTO canton VALUES (')
-        fd.write(province_code)
+        fd.write(str(province_code))
         fd.write('{:02d}'.format(canton_code))
         fd.write(', \'')
         fd.write(name)
         fd.write('\', ')
-        fd.write(province_code)
+        fd.write(str(province_code))
         fd.write(');\n')
 
 
@@ -169,13 +169,13 @@ def write_districts(fd, districts):
     for (province_code, canton_code, district_code), name \
             in districts.items():
         fd.write('INSERT INTO district VALUES (')
-        fd.write(province_code)
+        fd.write(str(province_code))
         fd.write('{:02d}'.format(canton_code))
         fd.write('{:03d}'.format(district_code))
         fd.write(', \'')
         fd.write(name)
         fd.write('\', ')
-        fd.write(province_code)
+        fd.write(str(province_code))
         fd.write('{:02d}'.format(canton_code))
         fd.write(');\n')
 
@@ -187,13 +187,13 @@ def write_voters(fd, voters):
     fd.write(SECTION_HEADER.format(name='voter'))
     for voter in voters:
         fd.write('INSERT INTO voter VALUES (')
-        fd.write(voter['id']),
+        fd.write(str(voter['id'])),
         fd.write(', ')
-        fd.write(voter['sex']),
+        fd.write(str(voter['sex'])),
         fd.write(', ')
         fd.write(voter['expiration'].strftime('%Y-%m-%d')),
         fd.write(', ')
-        fd.write(voter['site'])
+        fd.write(str(voter['site']))
         fd.write(', \'')
         fd.write(voter['name'])
         fd.write('\', \'')
@@ -201,7 +201,7 @@ def write_voters(fd, voters):
         fd.write('\', \'')
         fd.write(voter['family_name_2'])
         fd.write('\', ')
-        fd.write(voter['district'])
+        fd.write(str(voter['district']))
         fd.write(');\n')
 
 

@@ -69,8 +69,8 @@ def main(args):
     voters = VotersReader(extracted, distelec)
     voters.open()
 
-    # Get list of templates to render
-    if args.template is None:
+    # Get list of renderers to use
+    if args.renderer is None:
         renderers = list_renderers()
     else:
         renderers = [args.renderer]
@@ -86,9 +86,9 @@ def main(args):
 
     # Generate SQL output
     for rdr in renderers:
-        log.info('Writing template {} ...'.format(rdr))
+        log.info('Writing payload using renderer {} ...'.format(rdr))
         with open('{}.{}.sql'.format(digest, rdr), 'w') as sqlfile:
-            render(rdr, payload, sqlfile)
+            render(payload, rdr, sqlfile)
 
     # Log elapsed time
     end = datetime.now()
