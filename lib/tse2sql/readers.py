@@ -22,31 +22,18 @@ TSE files parsing / reading module.
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
-from os import listdir
 from logging import getLogger
 from datetime import datetime
 from traceback import format_exc
-from os.path import abspath, join
 from collections import OrderedDict
 from codecs import open as open_with_encoding
 
 from inflection import titleize
 
+from .utils import get_file, count_lines
+
 
 log = getLogger(__name__)
-
-
-def get_file(search_dir, filename):
-    """
-    Get file asdas
-    """
-    filematch = filename.lower()
-
-    for fnm in listdir(search_dir):
-        if fnm.lower() == filematch:
-            return abspath(join(search_dir, fnm))
-
-    raise Exception('No such file: {}'.format(filename))
 
 
 class DistrictsReader(object):
@@ -172,6 +159,7 @@ class DistrictsReader(object):
          file. In particular, the amount of provinces, cantons and districts,
          the largest name of those, and the bad lines found.
         :rtype: A dict of the form:
+
          ::
 
             analysis = {
@@ -247,6 +235,7 @@ class VotersReader(object):
     """  # noqa
 
     def __init__(self, search_dir, distelec):
+        self.total_voters = None
         self._search_dir = search_dir
         self._distelec = distelec
         self._filename = get_file(search_dir, 'PADRON_COMPLETO.txt')
@@ -258,6 +247,7 @@ class VotersReader(object):
         """
         Open voters file for on-the-fly parsing.
         """
+        self.total_voters = count_lines(self._filename)
         self._voters_file = open_with_encoding(
             self._filename, 'rb', 'iso8859-15'
         )

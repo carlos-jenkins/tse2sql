@@ -86,13 +86,13 @@ def main(args):
 
     # Generate SQL output
     for rdr in renderers:
-        log.info('Writing payload using renderer {} ...'.format(rdr))
+        print('Writing output for {} ...'.format(rdr))
         with open('{}.{}.sql'.format(digest, rdr), 'w') as sqlfile:
             render(payload, rdr, sqlfile)
 
     # Log elapsed time
     end = datetime.now()
-    log.info('Elapsed time: {}s'.format((end - start).seconds))
+    print('Elapsed time: {}s'.format((end - start).seconds))
 
     return 0
 

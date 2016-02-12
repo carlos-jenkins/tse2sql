@@ -22,9 +22,9 @@ Utilities module.
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
-from os import makedirs
 from zipfile import ZipFile
 from logging import getLogger
+from os import makedirs, listdir
 from hashlib import sha256 as sha256lib
 from tempfile import NamedTemporaryFile, gettempdir
 from os.path import basename, abspath, splitext, join
@@ -200,10 +200,53 @@ def unzip(filename):
     return extract_dir
 
 
+def get_file(search_dir, filename):
+    """
+    Case-insensitive get file from a directory.
+
+    :param str search_dir: Directory to look for filename.
+    :param str filename: Case-insensitive filename to look for.
+    :return: The absolute path to the file.
+    :rtype: str
+    :raises: Exception if file not found.
+    """
+    filematch = filename.lower()
+
+    for fnm in listdir(search_dir):
+        if fnm.lower() == filematch:
+            return abspath(join(search_dir, fnm))
+
+    raise Exception('No such file: {}'.format(filename))
+
+
+def count_lines(filename):
+    """
+    Count the number of lines in filename.
+
+    :param str filename: Path to the filename.
+    :return: The number of lines in the file.
+    :rtype: int
+    """
+    lines = 0
+    buf_size = 1024 * 1024
+
+    with open(filename, 'rb') as fd:
+        read_f = fd.read  # loop optimization
+
+        buf = read_f(buf_size)
+        while buf:
+            lines += buf.count(b'\n')
+            buf = read_f(buf_size)
+
+    return lines
+
+
 __all__ = [
     'is_url',
     'ensure_dir',
     'download',
     'sha256',
-    'unzip'
+    'unzip',
+    'get_file',
+    'count_lines'
 ]

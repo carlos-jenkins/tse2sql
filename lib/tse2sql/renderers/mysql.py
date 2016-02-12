@@ -24,6 +24,8 @@ from __future__ import print_function, division
 
 from logging import getLogger
 
+from tqdm import tqdm
+
 
 log = getLogger(__name__)
 
@@ -137,12 +139,20 @@ def write_provinces(fd, provinces):
     Write provinces INSERT INTO statement.
     """
     fd.write(SECTION_HEADER.format(name='province'))
-    for province_code, name in provinces.items():
-        fd.write('INSERT INTO province VALUES (')
-        fd.write(str(province_code))
-        fd.write(', \'')
-        fd.write(name)
-        fd.write('\');\n')
+
+    with tqdm(
+            total=len(provinces), unit='e', leave=True,
+            desc='INSERT INTO province') as pbar:
+
+        for province_code, name in provinces.items():
+            fd.write('INSERT INTO province VALUES (')
+            fd.write(str(province_code))
+            fd.write(', \'')
+            fd.write(name)
+            fd.write('\');\n')
+            pbar.update(1)
+
+    fd.write('\n\n')
 
 
 def write_cantons(fd, cantons):
@@ -150,15 +160,23 @@ def write_cantons(fd, cantons):
     Write cantons INSERT INTO statement.
     """
     fd.write(SECTION_HEADER.format(name='canton'))
-    for (province_code, canton_code), name in cantons.items():
-        fd.write('INSERT INTO canton VALUES (')
-        fd.write(str(province_code))
-        fd.write('{:02d}'.format(canton_code))
-        fd.write(', \'')
-        fd.write(name)
-        fd.write('\', ')
-        fd.write(str(province_code))
-        fd.write(');\n')
+
+    with tqdm(
+            total=len(cantons), unit='e', leave=True,
+            desc='INSERT INTO canton') as pbar:
+
+        for (province_code, canton_code), name in cantons.items():
+            fd.write('INSERT INTO canton VALUES (')
+            fd.write(str(province_code))
+            fd.write('{:02d}'.format(canton_code))
+            fd.write(', \'')
+            fd.write(name)
+            fd.write('\', ')
+            fd.write(str(province_code))
+            fd.write(');\n')
+            pbar.update(1)
+
+    fd.write('\n\n')
 
 
 def write_districts(fd, districts):
@@ -166,18 +184,26 @@ def write_districts(fd, districts):
     Write districts INSERT INTO statement.
     """
     fd.write(SECTION_HEADER.format(name='district'))
-    for (province_code, canton_code, district_code), name \
-            in districts.items():
-        fd.write('INSERT INTO district VALUES (')
-        fd.write(str(province_code))
-        fd.write('{:02d}'.format(canton_code))
-        fd.write('{:03d}'.format(district_code))
-        fd.write(', \'')
-        fd.write(name)
-        fd.write('\', ')
-        fd.write(str(province_code))
-        fd.write('{:02d}'.format(canton_code))
-        fd.write(');\n')
+
+    with tqdm(
+            total=len(districts), unit='e', leave=True,
+            desc='INSERT INTO district') as pbar:
+
+        for (province_code, canton_code, district_code), name \
+                in districts.items():
+            fd.write('INSERT INTO district VALUES (')
+            fd.write(str(province_code))
+            fd.write('{:02d}'.format(canton_code))
+            fd.write('{:03d}'.format(district_code))
+            fd.write(', \'')
+            fd.write(name)
+            fd.write('\', ')
+            fd.write(str(province_code))
+            fd.write('{:02d}'.format(canton_code))
+            fd.write(');\n')
+            pbar.update(1)
+
+    fd.write('\n\n')
 
 
 def write_voters(fd, voters):
@@ -185,24 +211,32 @@ def write_voters(fd, voters):
     Write voters INSERT INTO statement.
     """
     fd.write(SECTION_HEADER.format(name='voter'))
-    for voter in voters:
-        fd.write('INSERT INTO voter VALUES (')
-        fd.write(str(voter['id'])),
-        fd.write(', ')
-        fd.write(str(voter['sex'])),
-        fd.write(', ')
-        fd.write(voter['expiration'].strftime('%Y-%m-%d')),
-        fd.write(', ')
-        fd.write(str(voter['site']))
-        fd.write(', \'')
-        fd.write(voter['name'])
-        fd.write('\', \'')
-        fd.write(voter['family_name_1'])
-        fd.write('\', \'')
-        fd.write(voter['family_name_2'])
-        fd.write('\', ')
-        fd.write(str(voter['district']))
-        fd.write(');\n')
+
+    with tqdm(
+            total=voters.total_voters, unit='v', leave=True,
+            unit_scale=True, desc='INSERT INTO voter') as pbar:
+
+        for voter in voters:
+            fd.write('INSERT INTO voter VALUES (')
+            fd.write(str(voter['id'])),
+            fd.write(', ')
+            fd.write(str(voter['sex'])),
+            fd.write(', ')
+            fd.write(voter['expiration'].strftime('%Y-%m-%d')),
+            fd.write(', ')
+            fd.write(str(voter['site']))
+            fd.write(', \'')
+            fd.write(voter['name'])
+            fd.write('\', \'')
+            fd.write(voter['family_name_1'])
+            fd.write('\', \'')
+            fd.write(voter['family_name_2'])
+            fd.write('\', ')
+            fd.write(str(voter['district']))
+            fd.write(');\n')
+            pbar.update(1)
+
+    fd.write('\n\n')
 
 
 def write_mysql(fd, payload):
