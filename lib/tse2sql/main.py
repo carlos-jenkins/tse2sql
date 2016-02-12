@@ -28,7 +28,7 @@ from datetime import datetime
 
 from .utils import is_url, download, sha256, unzip
 from .readers import DistrictsReader, VotersReader
-from .render import list_templates, render
+from .render import list_renderers, render
 
 
 log = getLogger(__name__)
@@ -71,13 +71,12 @@ def main(args):
 
     # Get list of templates to render
     if args.template is None:
-        templates = list_templates()
+        renderers = list_renderers()
     else:
-        templates = [args.template]
+        renderers = [args.renderer]
 
     # Build rendering payload
     payload = {
-        'extracted': extracted,
         'digest': digest,
         'provinces': distelec.provinces,
         'cantons': distelec.cantons,
@@ -86,10 +85,10 @@ def main(args):
     }
 
     # Generate SQL output
-    for tpl in templates:
-        log.info('Writing template {} ...'.format(tpl))
-        with open('{}.{}.sql'.format(digest, tpl), 'w') as sql_output:
-            sql_output.write(render(tpl, payload))
+    for rdr in renderers:
+        log.info('Writing template {} ...'.format(rdr))
+        with open('{}.{}.sql'.format(digest, rdr), 'w') as sqlfile:
+            render(rdr, payload, sqlfile)
 
     # Log elapsed time
     end = datetime.now()

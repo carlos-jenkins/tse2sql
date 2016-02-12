@@ -1,5 +1,4 @@
 six
 tqdm
-jinja2
 requests
 inflection

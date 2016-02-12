@@ -22,51 +22,39 @@ SQL rendering module.
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
-from pkgutil import get_data
 from logging import getLogger
+from collections import OrderedDict
 
-from jinja2 import Environment, FunctionLoader, StrictUndefined
+from .renderers.mysql import write_mysql
 
 
 log = getLogger(__name__)
 
 
-def list_templates():
+RENDERERS = OrderedDict([
+    ('mysql', write_mysql)
+])
+
+
+def list_renderers():
     """
     List availables templates.
 
     :return: The list of available templates.
     :rtype: list
     """
-    from os import listdir
-    from sys import modules
-    from os.path import dirname, join, splitext
-    directory = join(dirname(modules['tse2sql'].__file__), 'templates')
-    templates = sorted([
-        name for name, ext in [splitext(fn) for fn in listdir(directory)]
-        if ext == '.tpl'
-    ])
-    return templates
+    return RENDERERS.keys()
 
 
-def render(template, payload):
+def render(payload, renderer, sqlfile):
     """
-    Render given template with given payload.
+    Render given payload using given renderer.
 
-    :param str template: The name of the template.
-    :param dict payload: The payload to render the template with.
-    :rtype: str
-    :return: The rendered template.
+    :param dict payload: The payload to render.
+    :param str renderer: The name of the renderer to use.
+    :param file sqlfile: Output file descriptor to write to.
     """
-    def load_template(name):
-        return get_data(
-            'tse2sql', 'templates/{}.tpl'.format(name)
-        ).decode('utf-8')
+    RENDERERS[renderer](sqlfile, payload)
 
-    env = Environment(
-        loader=FunctionLoader(load_template),
-        undefined=StrictUndefined
-    )
 
-    raw_tpl = env.get_template(template)
-    return raw_tpl.render(**payload)
+__all__ = ['list_renderers', 'render']

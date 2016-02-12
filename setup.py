@@ -62,9 +62,6 @@ setup(
     version=find_version('lib/tse2sql/__init__.py'),
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
-    package_data={
-        'tse2sql': ['templates/*.tpl']
-    },
     scripts=['bin/tse2sql'],
 
     # Dependencies

@@ -27,7 +27,7 @@ from os.path import isfile, abspath
 
 from . import __version__
 from .utils import is_url
-from .render import list_templates
+from .render import list_renderers
 
 
 log = logging.getLogger(__name__)
@@ -98,10 +98,10 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        '--template',
+        '--renderer',
         default=None,
-        help='SQL template to use',
-        choices=list_templates()
+        help='SQL renderer to use',
+        choices=list_renderers()
     )
 
     parser.add_argument(
