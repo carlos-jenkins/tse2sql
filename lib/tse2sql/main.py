@@ -24,6 +24,7 @@ from __future__ import print_function, division
 
 from json import dumps
 from logging import getLogger
+from datetime import datetime
 
 from .utils import is_url, download, sha256, unzip
 from .readers import DistrictsReader, VotersReader
@@ -42,6 +43,9 @@ def main(args):
     :return: Exit code.
     :rtype: int
     """
+    start = datetime.now()
+    log.debug('Start timestamp: {}'.format(start.isoformat()))
+
     # Download archive if required
     archive = args.archive
     if is_url(archive):
@@ -86,6 +90,10 @@ def main(args):
         log.info('Writing template {} ...'.format(tpl))
         with open('{}.{}.sql'.format(digest, tpl), 'w') as sql_output:
             sql_output.write(render(tpl, payload))
+
+    # Log elapsed time
+    end = datetime.now()
+    log.info('Elapsed time: {}s'.format((end - start).seconds))
 
     return 0
 
