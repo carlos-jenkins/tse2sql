@@ -246,8 +246,9 @@ class VotersReader(object):
     error will be logged as such.
     """  # noqa
 
-    def __init__(self, search_dir):
+    def __init__(self, search_dir, distelec):
         self._search_dir = search_dir
+        self._distelec = distelec
         self._filename = get_file(search_dir, 'PADRON_COMPLETO.txt')
         self._bad_data = []
         self._voters_file = None
@@ -279,10 +280,10 @@ class VotersReader(object):
                 continue
 
             try:
+                # Parse line
                 parts = line.split(',')
                 assert len(parts) == 8
-
-                return {
+                parsed = {
                     'id': int(parts[0]),
                     'district': int(parts[1]),
                     'sex': int(parts[2]),
@@ -292,6 +293,20 @@ class VotersReader(object):
                     'family_name_1': titleize(parts[6].strip()),
                     'family_name_2': titleize(parts[7].strip()),
                 }
+
+                # Validate district code
+                district_code = parsed['district']
+                district_key = (
+                    district_code // 100000,
+                    (district_code % 100000) // 1000,
+                    district_code % 1000
+                )
+                assert district_key in self._distelec.districts
+
+                # FIXME: Shall we perform some other assert here to validate
+                # data?
+
+                return parsed
 
             except Exception:
                 self._bad_data.append(linenum)

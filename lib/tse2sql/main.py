@@ -78,7 +78,7 @@ def main(args):
         'provinces': distelec.provinces,
         'cantons': distelec.cantons,
         'districts': distelec.districts,
-        # 'voters': voters
+        'voters': voters
     }
 
     # Generate SQL output
