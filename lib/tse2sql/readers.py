@@ -24,6 +24,7 @@ from __future__ import print_function, division
 
 from os import listdir
 from logging import getLogger
+from datetime import datetime
 from traceback import format_exc
 from os.path import abspath, join
 from collections import OrderedDict
@@ -33,9 +34,6 @@ from inflection import titleize
 
 
 log = getLogger(__name__)
-
-
-VOTERS_FILE = 'padron_completo.txt'
 
 
 def get_file(search_dir, filename):
@@ -103,13 +101,24 @@ class DistrictsReader(object):
 
         After parsing the following attributes will be available:
 
-        :var provinces:
-        :var cantons:
-        :var districts:
+        :var provinces: Dictionary with province id as key and name as value.
+        :var cantons: Dictionary with a tuple ``(province id, canton id)`` as
+         key and name as value.
+        :var districts: Dictionary with a tuple
+         ``(province id, canton id, district id)`` as key and name as value.
         """
         with open_with_encoding(self._filename, 'rb', 'iso8859-15') as fd:
-            for linenum, line in enumerate(fd):
+            for linenum, line in enumerate(fd, 1):
                 line = line.strip()
+
+                if not line:
+                    log.warning(
+                        'Distelec.txt :: Ignoring empty line #{}'.format(
+                            linenum
+                        )
+                    )
+                    continue
+
                 try:
                     parts = line.split(',')
                     assert len(parts) == 4
@@ -148,7 +157,7 @@ class DistrictsReader(object):
                 except Exception:
                     self._bad_data.append(linenum)
                     log.error(
-                        'Distelec.txt :: Bad data at line #{}'.format(
+                        'Distelec.txt :: Bad data at line #{}:\n{}'.format(
                             linenum, line
                         )
                     )
@@ -216,12 +225,83 @@ class VotersReader(object):
         100753618,111005,2,20220109,01168,ETELVINA                      ,PARRA                     ,SALAZAR
         100763791,108007,1,20190831,00971,REINALDO                      ,MENDEZ                    ,BARBOZA
 
-    - It lists all the voters in Costa Rica, ... FIXME
+    - It lists all the voters in Costa Rica: their id, voting district,
+      officialy sex (as if anyone should care), id expiration, voting site,
+      name, first family name and second family name.
     - It is encoded in ``ISO-8859-15`` and uses Windows CRLF line terminators.
+    - It is quite unstable. Deaths and people passing 18 years are removed -
+      added.
+    - It is very large. As this writting, the CSV file is 364MB in size, with
+      3 178 364 lines (and thus, registered voters).
+    - The semantics of the sex code is as following: ``1``: men, ``2``: women.
+    - The format of the id expiration date is ``%Y%m%d`` as following:
+
+      ::
+
+          <year(4 digit)><month(2 digits)><day(2 digits)>
+
+    This class will interpret the file on the fly without loading it entirely
+    on main memory.
+    Also, the file will be processed even if some lines are malformed. Any
+    error will be logged as such.
     """  # noqa
 
     def __init__(self, search_dir):
-        super(VotersReader, self).__init__(VOTERS_FILE, search_dir)
+        self._search_dir = search_dir
+        self._filename = get_file(search_dir, 'PADRON_COMPLETO.txt')
+        self._bad_data = []
+        self._voters_file = None
+        self._voters_iter = None
+
+    def open(self):
+        """
+        Open voters file for on-the-fly parsing.
+        """
+        self._voters_file = open_with_encoding(
+            self._filename, 'rb', 'iso8859-15'
+        )
+        self._voters_iter = enumerate(self._voters_file, 1)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while True:
+            linenum, line = next(self._voters_iter)
+
+            line = line.strip()
+            if not line:
+                log.warning(
+                    'PADRON_COMPLETO.txt :: Ignoring empty line #{}'.format(
+                        linenum
+                    )
+                )
+                continue
+
+            try:
+                parts = line.split(',')
+                assert len(parts) == 8
+
+                return {
+                    'id': int(parts[0]),
+                    'district': int(parts[1]),
+                    'sex': int(parts[2]),
+                    'expiration': datetime.strptime(parts[3], '%Y%m%d').date(),
+                    'site': int(parts[4]),
+                    'name': titleize(parts[5].strip()),
+                    'family_name_1': titleize(parts[6].strip()),
+                    'family_name_2': titleize(parts[7].strip()),
+                }
+
+            except Exception:
+                self._bad_data.append(linenum)
+                log.error(
+                    'PADRON_COMPLETO.txt :: Bad data at line #{}:\n{}'.format(
+                        linenum, line
+                    )
+                )
+                log.debug(format_exc())
+                continue
 
 
 __all__ = ['DistrictsReader', 'VotersReader']

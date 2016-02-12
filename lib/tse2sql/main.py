@@ -26,7 +26,7 @@ from json import dumps
 from logging import getLogger
 
 from .utils import is_url, download, sha256, unzip
-from .readers import DistrictsReader
+from .readers import DistrictsReader, VotersReader
 from .render import list_templates, render
 
 
@@ -61,8 +61,9 @@ def main(args):
     with open('{}.data.json'.format(digest), 'w') as fd:
         fd.write(analysis)
 
-    # voters = VotersReader(extracted, distelec)
-    # voters.open()
+    # Open voters file
+    voters = VotersReader(extracted, distelec)
+    voters.open()
 
     # Get list of templates to render
     if args.template is None:
