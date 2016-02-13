@@ -91,7 +91,7 @@ use the following query:
     SELECT * FROM voter
         JOIN district ON voter.district_id_district = district.id_district
         JOIN canton ON district.canton_id_canton = canton.id_canton
-        JOIN province on canton.province_id_province = province.id_province
+        JOIN province ON canton.province_id_province = province.id_province
         WHERE voter.id_voter = <id_voter>;
 
 

@@ -7,5 +7,5 @@
     "project_name": "Convertidor del Padron Electoral a SQL",
     "short_description": "Convertidor a SQL del padrón electoral publicado en CSV por el Tribunal Supremo de Elecciones",
     "year": "2016",
-    "version": "0.1.0"
+    "version": "1.0.0"
 }
