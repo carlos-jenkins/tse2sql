@@ -59,7 +59,7 @@ to avoid download of the database if it is already in the local system.
 When run, ``tse2sql`` will create a few files in the current working directory:
 
 :``<digest>.data.sjon``: Analysis of the ``Distelec.txt`` data. This JSON file
- provides a dictionary the amount of provinces, cantons and districts,
+ provides a dictionary with the amount of provinces, cantons and districts,
  the largest name of those, and the bad lines found.
 :``<digest>.<renderer>.sql``: The SQL version of the database.
 
