@@ -25,7 +25,7 @@ You require the Python packages installer ``pip``, see:
 
 Then, install the ``tse2sql`` package:
 
-::
+.. code-block:: bash
 
     sudo pip install tse2sql
 
@@ -33,7 +33,7 @@ Then, install the ``tse2sql`` package:
 Usage
 =====
 
-::
+.. code-block:: text
 
     $ pip install tse2sql
     $ tse2sql --help
@@ -77,13 +77,22 @@ You will need a functional MySQL server install, see:
 
 Load the database and create a user for it:
 
-::
+.. code-block:: text
 
     $ mysql -u root -p
     mysql> SET @start := NOW(); source <DIGEST>.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);
     mysql> GRANT ALL PRIVILEGES ON tse2sql.* TO 'tse2sql'@'localhost' IDENTIFIED BY '<YOUR_PASSWORD>';
 
-Sourcing the database will take several minutes.
+Sourcing the database will take several minutes. Once done you will most likely
+use the following query:
+
+.. code-block:: mysql
+
+    SELECT * FROM voter
+        JOIN district ON voter.district_id_district = district.id_district
+        JOIN canton ON district.canton_id_canton = canton.id_canton
+        JOIN province on canton.province_id_province = province.id_province
+        WHERE voter.id_voter = <id_voter>;
 
 
 Contributing
