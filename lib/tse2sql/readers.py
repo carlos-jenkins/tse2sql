@@ -279,9 +279,15 @@ class VotersReader(object):
                     'sex': int(parts[2]),
                     'expiration': datetime.strptime(parts[3], '%Y%m%d').date(),
                     'site': int(parts[4]),
-                    'name': titleize(parts[5].strip()),
-                    'family_name_1': titleize(parts[6].strip()),
-                    'family_name_2': titleize(parts[7].strip()),
+                    'name': titleize(
+                        parts[5].strip().replace("'", "\\'")
+                    ),
+                    'family_name_1': titleize(
+                        parts[6].strip().replace("'", "\\'")
+                    ),
+                    'family_name_2': titleize(
+                        parts[7].strip().replace("'", "\\'")
+                    ),
                 }
 
                 # Validate district code
