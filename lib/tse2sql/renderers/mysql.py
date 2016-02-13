@@ -221,9 +221,9 @@ def write_voters(fd, voters):
             fd.write(str(voter['id'])),
             fd.write(', ')
             fd.write(str(voter['sex'])),
-            fd.write(', ')
+            fd.write(', \'')
             fd.write(voter['expiration'].strftime('%Y-%m-%d')),
-            fd.write(', ')
+            fd.write('\', ')
             fd.write(str(voter['site']))
             fd.write(', \'')
             fd.write(voter['name'])
