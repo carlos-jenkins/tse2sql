@@ -87,6 +87,7 @@ Sourcing the database will take several minutes. Once done you will most likely
 use the following query:
 
 .. code-block:: mysql
+
     SELECT id_voter, name, family_name_1, family_name_2, sex, id_expiration,
     name_province, name_canton, name_district FROM voter
         JOIN district ON voter.district_id_district = district.id_district
