@@ -56,7 +56,7 @@ USE `tsesql` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tsesql`.`province` (
   `id_province` TINYINT(1) UNSIGNED NOT NULL,
-  `name` VARCHAR(10) NOT NULL,
+  `name_province` VARCHAR(10) NOT NULL,
   PRIMARY KEY (`id_province`))
 ENGINE = InnoDB
 COMMENT = 'Costa Rica has 7 provinces, plus one code for consulates.';
@@ -67,7 +67,7 @@ COMMENT = 'Costa Rica has 7 provinces, plus one code for consulates.';
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tsesql`.`canton` (
   `id_canton` SMALLINT(3) UNSIGNED NOT NULL,
-  `name` VARCHAR(20) NOT NULL,
+  `name_canton` VARCHAR(20) NOT NULL,
   `province_id_province` TINYINT(1) UNSIGNED NOT NULL,
   PRIMARY KEY (`id_canton`, `province_id_province`),
   INDEX `fk_canton_province1_idx` (`province_id_province` ASC),
@@ -85,7 +85,7 @@ COMMENT = 'As of 02/2016 Costa Rica has 81 cantons (124 if including consulates)
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tsesql`.`district` (
   `id_district` MEDIUMINT(6) UNSIGNED NOT NULL,
-  `name` VARCHAR(34) NOT NULL,
+  `name_district` VARCHAR(34) NOT NULL,
   `canton_id_canton` SMALLINT(3) UNSIGNED NOT NULL,
   PRIMARY KEY (`id_district`, `canton_id_canton`),
   INDEX `fk_district_canton1_idx` (`canton_id_canton` ASC),
