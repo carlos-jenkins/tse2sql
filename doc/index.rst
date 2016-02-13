@@ -35,7 +35,7 @@ Usage
 
 .. code-block:: text
 
-    $ pip install tse2sql
+    $ pip3 install tse2sql
     $ tse2sql --help
     usage: tse2sql [-h] [-v] [--version] [--renderer {mysql}] [archive]
 
