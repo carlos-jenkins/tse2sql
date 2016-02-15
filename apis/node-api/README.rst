@@ -1,16 +1,5 @@
-======================================
-Convertidor del Padron Electoral a SQL
-======================================
-
-Convertidor a SQL del padrón electoral publicado en CSV por el Tribunal Supremo
-de Elecciones
-
-
-Documentation
-=============
-
-    https://tse2sql.readthedocs.org/
-
+NodeJS API del padrón electoral del TSE
+============
 
 License
 =======
