@@ -1,0 +1,20 @@
+{
+  "name": "node-tse-api",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "app.js"
+  },
+  "dependencies": {
+    "execSync": "^1.0.2",
+    "express": "~3.1",
+    "mysql": "*",
+    "underscore": "*"
+  },
+  "devDependencies": {
+      "grunt": "*",
+      "grunt-contrib-jshint": "*",
+      "grunt-githooks": "*",
+      "load-grunt-configs": "0.4.0"
+  }
+}
