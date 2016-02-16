@@ -19,6 +19,15 @@ var voterByNameQuery =
     'AGAINST (? IN BOOLEAN MODE) LIMIT 30;';
 
 voter.getVoterById = function(voterId, callback) {
+    /*  Adapt 7 digits ids
+        PAAABBB -> P0AAA0BBB */
+    if (voterId < 10000000) {
+        voterId = (
+        (Math.floor(voterId / 1000000) * 100000000) +
+        ((Math.floor(voterId / 1000) % 1000) * 10000) +
+        (voterId % 1000)
+        )
+    }
     db.query(voterByIdQuery, [voterId],
         function(err, rows, fields) {
             callback(null, _.first(rows));
