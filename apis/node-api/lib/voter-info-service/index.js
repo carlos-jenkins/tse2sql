@@ -44,7 +44,7 @@ voter.getVoterByName = function(voterName, type, callback) {
 
     db.query(voterByNameQuery, ['\'' + voterName + '\''],
         function(err, rows, fields) {
-            callback(null, rows);
+            callback(null, { results: rows });
         }
     );
 };
