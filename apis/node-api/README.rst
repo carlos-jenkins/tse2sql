@@ -1,5 +1,18 @@
+=======================================
 NodeJS API del padrón electoral del TSE
-============
+=======================================
+
+Usage
+=====
+
+.. code-block:: bash
+
+   sudo apt-get install nodejs npm
+   sudo ln -s /usr/bin/nodejs /usr/bin/node
+   sudo npm install -g grunt grunt-cli
+   npm install
+   grunt sanity
+
 
 License
 =======

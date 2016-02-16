@@ -83,6 +83,7 @@ Load the database and create a user for it:
     mysql> SET @start := NOW(); source <DIGEST>.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);
     mysql> GRANT ALL PRIVILEGES ON tse2sql.* TO 'tse2sql'@'localhost' IDENTIFIED BY '<YOUR_PASSWORD>';
 
+
 Sourcing the database will take several minutes. Once done you will most likely
 use the following query:
 
@@ -113,10 +114,11 @@ To implement the full search, MySQL uses Boolean logic, in which
     - stands for NOT
     [no operator] implies OR
 
-The minimum default token size in InnoDB is 3 characters and the indexing engine
-ignores words shorter than this minimum size, then when the length
-of the token is minor than 3 no operator should be added to get more accurate
+The minimum default token size in InnoDB is 3 characters and the indexing
+engine ignores words shorter than this minimum size, then when the length of
+the token is minor than 3 no operator should be added to get more accurate
 results.
+
 
 Contributing
 ============
