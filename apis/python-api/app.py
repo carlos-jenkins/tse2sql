@@ -99,12 +99,35 @@ class TseSqlApp(object):
             self.app.route(endpoint, methods=['GET'])(method)
 
     def info_by_id(self, voter_id):
+        """
+        Get a voter by voter id.
+
+        :param int voter_id: Voter identity card number.
+        """
+        # Adapt 7 digits ids
+        # PAAABBB -> P0AAA0BBB
+        if voter_id < 10000000:
+            voter_id = (
+                ((voter_id // 1000000) * 100000000) +
+                (((voter_id // 1000) % 1000) * 10000) +
+                (voter_id % 1000)
+            )
+
         with self.db.cursor() as cursor:
             cursor.execute(VOTER_BY_ID_QUERY, (voter_id, ))
             result = cursor.fetchone()
+
+        if result is None:
+            abort(404)
+
         return jsonify(result)
 
     def info_by_name(self, voter_name):
+        """
+        Get a voter by name.
+
+        :param str voter_name: Name of the voter to look for.
+        """
         if not voter_name:
             abort(400)
 
