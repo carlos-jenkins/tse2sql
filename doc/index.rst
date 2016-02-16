@@ -95,6 +95,28 @@ use the following query:
         JOIN province ON canton.province_id_province = province.id_province
         WHERE voter.id_voter = <id_voter>;
 
+If you don't have the voter id but you have the name you could use the following
+query (adding the + sign at the beginning of each word is important to get
+matching res):
+
+.. code-block:: mysql
+
+    SELECT * FROM voter WHERE MATCH(name, family_name_1, family_name_2)
+        AGAINST ('+<name> +<family_name_1> +<family_name_2>' IN BOOLEAN MODE);
+
+
+To implement the full search, MySQL uses Boolean logic, in which
+
+.. code-block:: text
+
+    + stands for AND
+    - stands for NOT
+    [no operator] implies OR
+
+The minimum default token size in InnoDB is 3 characters and the indexing engine
+ignores words shorter than this minimum size, then when the length
+of the token is minor than 3 no operator should be added to get more accurate
+results.
 
 Contributing
 ============
