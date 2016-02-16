@@ -11,6 +11,7 @@ Usage
 .. code-block:: bash
 
    sudo pip3 install -r requirements.txt
+   nano settings.json
    ./app.py
 
 

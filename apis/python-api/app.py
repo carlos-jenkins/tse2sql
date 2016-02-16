@@ -49,6 +49,9 @@ DB_MIN_TOKEN_SIZE = 3
 
 
 class DatesJSONEncoder(JSONEncoder):
+    """
+    Custom JSONEncoder class that knows how to serialize Python date types.
+    """
     def default(self, obj):
         try:
             if isinstance(obj, date) or isinstance(obj, datetime):
@@ -61,54 +64,72 @@ class DatesJSONEncoder(JSONEncoder):
         return JSONEncoder.default(self, obj)
 
 
-with open(join(dirname(abspath(__file__)), 'settings.json')) as fd:
-    config = loads(fd.read())
+class TseSqlApp(object):
+    """
+    Tse2Sql Python-Flask REST API example.
+    """
 
-db = connect(
-    host=config.get('host', 'localhost'),
-    user=config.get('user', 'tsesql'),
-    password=config.get('password', ''),
-    db=config.get('db', 'tsesql'),
-    charset='utf8mb4',
-    cursorclass=cursors.DictCursor
-)
-app = Flask('tsesql', static_folder=None)
-app.json_encoder = DatesJSONEncoder
+    def __init__(self, ):
 
+        # Read configuration
+        with open(join(dirname(abspath(__file__)), 'settings.json')) as fd:
+            self.config = loads(fd.read())
 
-@app.route('/voter/info-by-id/<int:voter_id>', methods=['GET'])
-def info_by_id(voter_id):
-    with db.cursor() as cursor:
-        cursor.execute(VOTER_BY_ID_QUERY, (voter_id, ))
-        result = cursor.fetchone()
-    return jsonify(result)
+        # Create database connection
+        self.db = connect(
+            host=self.config.get('host', 'localhost'),
+            user=self.config.get('user', 'tsesql'),
+            password=self.config.get('password', ''),
+            db=self.config.get('db', 'tsesql'),
+            charset='utf8mb4',
+            cursorclass=cursors.DictCursor
+        )
 
+        # Configure Flask application
+        self.app = Flask('tsesql', static_folder=None)
+        self.app.json_encoder = DatesJSONEncoder
+        self.app.errorhandler(404)(self.not_found)
 
-@app.route('/voter/info-by-name/<voter_name>', methods=['GET'])
-def info_by_name(voter_name):
-    if not voter_name:
-        abort(400)
+        # Define routes
+        routes = [
+            ('/voter/info-by-id/<int:voter_id>', self.info_by_id),
+            ('/voter/info-by-name/<voter_name>', self.info_by_name)
+        ]
+        for endpoint, method in routes:
+            self.app.route(endpoint, methods=['GET'])(method)
 
-    prepared = ' '.join([
-        '+{}'.format(token)
-        if len(token) >= DB_MIN_TOKEN_SIZE
-        else token
-        for token in voter_name.split()
-    ])
+    def info_by_id(self, voter_id):
+        with self.db.cursor() as cursor:
+            cursor.execute(VOTER_BY_ID_QUERY, (voter_id, ))
+            result = cursor.fetchone()
+        return jsonify(result)
 
-    with db.cursor() as cursor:
-        cursor.execute(VOTER_BY_NAME_QUERY, (prepared, ))
-        result = cursor.fetchall()
-    return jsonify(results=result)
+    def info_by_name(self, voter_name):
+        if not voter_name:
+            abort(400)
 
+        prepared = ' '.join([
+            '+{}'.format(token)
+            if len(token) >= DB_MIN_TOKEN_SIZE
+            else token
+            for token in voter_name.split()
+        ])
 
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
+        with self.db.cursor() as cursor:
+            cursor.execute(VOTER_BY_NAME_QUERY, (prepared, ))
+            result = cursor.fetchall()
+        return jsonify(results=result)
+
+    def not_found(self, error):
+        return make_response(jsonify({'error': 'Not found'}), 404)
+
+    def run(self):
+        self.app.run(
+            port=self.config.get('api_port', 5000),
+            debug=True
+        )
 
 
 if __name__ == '__main__':
-    app.run(
-        port=config.get('api_port', 5000),
-        debug=True
-    )
+    app = TseSqlApp()
+    app.run()
