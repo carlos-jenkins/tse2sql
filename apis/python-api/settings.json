@@ -1,0 +1,7 @@
+{
+    "host": "localhost",
+    "user": "tsesql",
+    "password": "",
+    "db": "tsesql",
+    "api_port": 5000
+}
