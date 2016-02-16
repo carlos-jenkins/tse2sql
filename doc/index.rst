@@ -19,7 +19,7 @@ de Elecciones
 Install
 =======
 
-You require the Python packages installer ``pip``, see:
+You require the Python packages installer for Python 3 ``pip3``, see:
 
     https://pip.pypa.io/en/stable/installing/
 
@@ -27,7 +27,7 @@ Then, install the ``tse2sql`` package:
 
 .. code-block:: bash
 
-    sudo pip install tse2sql
+    sudo pip3 install tse2sql
 
 
 Usage
