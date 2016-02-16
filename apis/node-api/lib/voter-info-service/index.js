@@ -30,6 +30,9 @@ voter.getVoterById = function(voterId, callback) {
     }
     db.query(voterByIdQuery, [voterId],
         function(err, rows, fields) {
+            if (_.isEmpty(rows) || _.isUndefined(rows)) {
+                return callback({ code: 404 }, {});
+            }
             callback(null, _.first(rows));
     });
 };
@@ -54,6 +57,9 @@ voter.getVoterByName = function(voterName, callback) {
 
     db.query(voterByNameQuery, ['\'' + voterName + '\''],
         function(err, rows, fields) {
+            if (_.isEmpty(rows) || _.isUndefined(rows)) {
+                return callback({ code: 404 }, { results: [] });
+            }
             callback(null, { results: rows });
         }
     );

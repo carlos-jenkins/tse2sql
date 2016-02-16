@@ -5,6 +5,8 @@ module.exports = function(app) {
         voterService.getVoterById(req.params.voterId, function(err, result) {
             if(!err) {
                 res.send(result);
+            } else {
+                res.send(result, err.code);
             }
         });
     });
@@ -13,6 +15,8 @@ module.exports = function(app) {
         voterService.getVoterByName(req.params.voterName, function(err, result) {
             if(!err) {
                 res.send(result);
+            } else {
+                res.send(result, err.code);
             }
         });
     });
