@@ -5,6 +5,9 @@ NodeJS API del padrón electoral del TSE
 Usage
 =====
 
+Linux
+-----
+
 .. code-block:: bash
 
    sudo apt-get install nodejs npm
@@ -13,6 +16,16 @@ Usage
    npm install
    grunt sanity
 
+
+Mac
+---
+
+.. code-block:: bash
+
+    brew install node
+    sudo npm install -g grunt grunt-cli
+    npm install
+    grunt sanity
 
 License
 =======
