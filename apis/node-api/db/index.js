@@ -1,13 +1,10 @@
 var mysql = require('mysql');
+var settings = require('./settings.json');
 var db;
 
 function connectDatabase() {
     if (!db) {
-        db = mysql.createConnection({
-            user: 'root',
-            password: '',
-            database: 'tsesql'
-        });
+        db = mysql.createConnection(settings);
 
         db.connect(function(err){
             if(!err) {
