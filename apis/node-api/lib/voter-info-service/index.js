@@ -4,17 +4,18 @@ var dbMinTokenSize = 3;
 
 var voter = {};
 
-var voterByIdQuery =
+var baseQuery =
     'SELECT id_voter, name, family_name_1, family_name_2, sex, ' +
     'id_expiration, name_province, name_canton, name_district, site ' +
     'FROM voter ' +
     'JOIN district ON voter.district_id_district = district.id_district ' +
     'JOIN canton ON district.canton_id_canton = canton.id_canton ' +
-    'JOIN province ON canton.province_id_province = province.id_province ' +
-    'WHERE voter.id_voter = ?;';
+    'JOIN province ON canton.province_id_province = province.id_province ';
+
+var voterByIdQuery = baseQuery + 'WHERE voter.id_voter = ?;';
 
 var voterByNameQuery =
-    'SELECT * FROM voter ' +
+    baseQuery +
     'WHERE MATCH(name, family_name_1, family_name_2) ' +
     'AGAINST (? IN BOOLEAN MODE) LIMIT 30;';
 
@@ -26,7 +27,7 @@ voter.getVoterById = function(voterId, callback) {
         (Math.floor(voterId / 1000000) * 100000000) +
         ((Math.floor(voterId / 1000) % 1000) * 10000) +
         (voterId % 1000)
-        )
+        );
     }
     db.query(voterByIdQuery, [voterId],
         function(err, rows, fields) {
