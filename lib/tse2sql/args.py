@@ -56,12 +56,36 @@ def validate_args(args):
 
     log.debug('Raw arguments:\n{}'.format(args))
 
-    # Verify archive file exists
+    # Verify input file exists
     if not is_url(args.archive):
         if not isfile(args.archive):
             log.error('No such file : {}'.format(args.archive))
             exit(1)
         args.archive = abspath(args.archive)
+
+    return args
+
+
+def validate_args_scrapper(args):
+    """
+    Validate that arguments are valid for the scrapper.
+
+    :param args: An arguments namespace.
+    :type args: :py:class:`argparse.Namespace`
+    :return: The validated namespace.
+    :rtype: :py:class:`argparse.Namespace`
+    """
+    level = V_LEVELS.get(args.verbose, logging.DEBUG)
+    logging.basicConfig(format=FORMAT, level=level)
+
+    log.debug('Raw arguments:\n{}'.format(args))
+
+    # Verify samples file exists
+    if not is_url(args.samples):
+        if not isfile(args.samples):
+            log.error('No such file : {}'.format(args.samples))
+            exit(1)
+        args.samples = abspath(args.samples)
 
     return args
 
@@ -116,4 +140,48 @@ def parse_args(argv=None):
     return args
 
 
-__all__ = ['parse_args']
+def parse_args_scrapper(argv=None):
+    """
+    Scrapper argument parsing routine.
+
+    :param argv: A list of argument strings.
+    :rtype argv: list
+    :return: A parsed and verified arguments namespace.
+    :rtype: :py:class:`argparse.Namespace`
+    """
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(description=('TSE Voting Sites Scrapper'))
+
+    parser.add_argument(
+        '-v', '--verbose',
+        help='Increase verbosity level',
+        default=0,
+        action='count'
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='TSE Voting Sites Scrapper v{}'.format(
+            __version__
+        )
+    )
+
+    parser.add_argument(
+        '--renderer',
+        default=None,
+        help='SQL renderer to use',
+        choices=list_renderers()
+    )
+
+    parser.add_argument(
+        'samples',
+        help='Samples file with one id number per site id'
+    )
+
+    args = parser.parse_args(argv)
+    args = validate_args_scrapper(args)
+    return args
+
+
+__all__ = ['parse_args', 'parse_args_scrapper']

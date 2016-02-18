@@ -23,9 +23,11 @@ doc/tse2sql/*
 *.data.json
 *.mysql.sql
 *.sqlite.sql
+*.samples.json
 
 # TSE
 padron*.zip
+padron*/*
 
 # Misc
 *~

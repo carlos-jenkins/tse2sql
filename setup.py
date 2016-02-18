@@ -62,7 +62,7 @@ setup(
     version=find_version('lib/tse2sql/__init__.py'),
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
-    scripts=['bin/tse2sql'],
+    scripts=['bin/tse2sql', 'bin/tse2sql-scrapper'],
 
     # Dependencies
     install_requires=find_requirements('requirements.txt'),

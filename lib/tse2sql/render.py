@@ -25,14 +25,14 @@ from __future__ import print_function, division
 from logging import getLogger
 from collections import OrderedDict
 
-from .renderers.mysql import write_mysql
+from .renderers.mysql import write_mysql, write_mysql_scrapper
 
 
 log = getLogger(__name__)
 
 
 RENDERERS = OrderedDict([
-    ('mysql', write_mysql)
+    ('mysql', (write_mysql, write_mysql_scrapper))
 ])
 
 
@@ -54,7 +54,18 @@ def render(payload, renderer, sqlfile):
     :param str renderer: The name of the renderer to use.
     :param file sqlfile: Output file descriptor to write to.
     """
-    RENDERERS[renderer](sqlfile, payload)
+    RENDERERS[renderer][0](sqlfile, payload)
 
 
-__all__ = ['list_renderers', 'render']
+def render_scrapped(data, renderer, sqlfile):
+    """
+    Render given payload using given renderer.
+
+    :param dict data: The scrapped data to render.
+    :param str renderer: The name of the renderer to use.
+    :param file sqlfile: Output file descriptor to write to.
+    """
+    RENDERERS[renderer][1](sqlfile, data)
+
+
+__all__ = ['list_renderers', 'render', 'render_scrapped']

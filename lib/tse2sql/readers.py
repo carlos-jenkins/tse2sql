@@ -236,6 +236,7 @@ class VotersReader(object):
 
     def __init__(self, search_dir, distelec):
         self.total_voters = None
+        self.samples = OrderedDict()
         self._search_dir = search_dir
         self._distelec = distelec
         self._filename = get_file(search_dir, 'PADRON_COMPLETO.txt')
@@ -279,15 +280,9 @@ class VotersReader(object):
                     'sex': int(parts[2]),
                     'expiration': datetime.strptime(parts[3], '%Y%m%d').date(),
                     'site': int(parts[4]),
-                    'name': titleize(
-                        parts[5].strip().replace("'", "\\'")
-                    ),
-                    'family_name_1': titleize(
-                        parts[6].strip().replace("'", "\\'")
-                    ),
-                    'family_name_2': titleize(
-                        parts[7].strip().replace("'", "\\'")
-                    ),
+                    'name': titleize(parts[5].strip()),
+                    'family_name_1': titleize(parts[6].strip()),
+                    'family_name_2': titleize(parts[7].strip()),
                 }
 
                 # Validate district code
@@ -301,6 +296,10 @@ class VotersReader(object):
 
                 # FIXME: Shall we perform some other assert here to validate
                 # data?
+
+                # Include sample if not present
+                if parsed['district'] not in self.samples:
+                    self.samples[parsed['district']] = parsed['id']
 
                 return parsed
 

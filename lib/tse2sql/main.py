@@ -22,13 +22,16 @@ Application entry point module.
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 
-from json import dumps
+from os import extsep
+from os.path import basename
+from json import dumps, loads
 from logging import getLogger
 from datetime import datetime
 
+from .scrapper import scrappe_data
 from .utils import is_url, download, sha256, unzip
 from .readers import DistrictsReader, VotersReader
-from .render import list_renderers, render
+from .render import list_renderers, render, render_scrapped
 
 
 log = getLogger(__name__)
@@ -90,6 +93,10 @@ def main(args):
         with open('{}.{}.sql'.format(digest, rdr), 'w') as sqlfile:
             render(payload, rdr, sqlfile)
 
+    # Write samples files
+    with open('{}.samples.json'.format(digest), 'w') as samplesfile:
+        samplesfile.write(dumps(voters.samples, indent=4))
+
     # Log elapsed time
     end = datetime.now()
     print('Elapsed time: {}s'.format((end - start).seconds))
@@ -97,4 +104,47 @@ def main(args):
     return 0
 
 
-__all__ = ['main']
+SCRAPPER_URL = (
+    'http://www.tse.go.cr/DondeVotarM/prRemoto.aspx/ObtenerDondeVotar'
+)
+
+
+def main_scrapper(args):
+    """
+    Scrapper main function.
+
+    :param args: An arguments namespace.
+    :type args: :py:class:`argparse.Namespace`
+    :return: Exit code.
+    :rtype: int
+    """
+    start = datetime.now()
+    log.error('Start timestamp: {}'.format(start.isoformat()))
+
+    # Get list of renderers to use
+    if args.renderer is None:
+        renderers = list_renderers()
+    else:
+        renderers = [args.renderer]
+
+    # Grab user data
+    digest, ext = (basename(args.samples).split(extsep, 1))
+    with open(args.samples) as fd:
+        samples = loads(fd.read())
+
+    # Execute data scrapper
+    scrapped_data = scrappe_data(samples)
+
+    # Generate SQL output
+    for rdr in renderers:
+        print('Writing output for {} ...'.format(rdr))
+        with open('{}.scrapped.{}.sql'.format(digest, rdr), 'w') as sqlfile:
+            render_scrapped(scrapped_data, rdr, sqlfile)
+
+    # Log elapsed time
+    end = datetime.now()
+    print('Elapsed time: {}s'.format((end - start).seconds))
+
+    return 0
+
+__all__ = ['main', 'main_scrapper']
