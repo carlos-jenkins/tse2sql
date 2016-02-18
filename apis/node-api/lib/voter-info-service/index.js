@@ -6,7 +6,9 @@ var voter = {};
 
 var baseQuery =
     'SELECT id_voter, name, family_name_1, family_name_2, sex, ' +
-    'id_expiration, name_province, name_canton, name_district, site ' +
+    'id_expiration, name_province, name_canton, name_district, site, ' +
+    'voting_center_name, voting_center_address, voting_center_latitude, ' +
+    'voting_center_longitude ' +
     'FROM voter ' +
     'JOIN district ON voter.district_id_district = district.id_district ' +
     'JOIN canton ON district.canton_id_canton = canton.id_canton ' +
