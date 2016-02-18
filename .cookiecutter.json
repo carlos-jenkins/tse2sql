@@ -7,5 +7,5 @@
     "project_name": "Convertidor del Padron Electoral a SQL",
     "short_description": "SQL converter of the electoral registry published by the Costa Rican Supreme Electoral Tribunal",
     "year": "2016",
-    "version": "1.0.0"
+    "version": "1.1.0"
 }
