@@ -158,10 +158,13 @@ class TseSqlApp(object):
     def run(self):
         self.app.run(
             port=self.config.get('api_port', 5000),
-            debug=True
+            debug=self.config.get('debug', False),
         )
 
 
+app = TseSqlApp()
+application = app.app
+
+
 if __name__ == '__main__':
-    app = TseSqlApp()
     app.run()
