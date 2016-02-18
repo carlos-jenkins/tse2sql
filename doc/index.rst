@@ -219,7 +219,11 @@ Instructions to how to run those REST APIs is available in each subproject
 Android App
 ===========
 
-An Android App project can be found at:
+You can download the Android App *¿Dónde Voto?* here:
+
+    http://carlos.jenkins.co.cr/software/donde-voto.apk
+
+The project repository for this app is located at:
 
     https://github.com/caroaguilar/tse-info-app
 
