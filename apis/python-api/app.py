@@ -32,6 +32,8 @@ from flask import Flask, abort, jsonify, make_response
 BASE_QUERY = (
     'SELECT id_voter, name, family_name_1, family_name_2, sex, '
     'id_expiration, name_province, name_canton, name_district, site '
+    'voting_center_name, voting_center_address, '
+    'voting_center_latitude, voting_center_longitude '
     'FROM voter '
     'JOIN district ON voter.district_id_district = district.id_district '
     'JOIN canton ON district.canton_id_canton = canton.id_canton '
@@ -57,6 +59,9 @@ class DatesJSONEncoder(JSONEncoder):
     Custom JSONEncoder class that knows how to serialize Python date types.
     """
     def default(self, obj):
+        # No real use here, just make sure this is the backend encoder
+        import simplejson  # noqa
+
         try:
             if isinstance(obj, date) or isinstance(obj, datetime):
                 return obj.isoformat()
@@ -92,7 +97,7 @@ class TseSqlApp(object):
         # Configure Flask application
         self.app = Flask('tsesql', static_folder=None)
         self.app.json_encoder = DatesJSONEncoder
-        self.app.errorhandler(404)(self.not_found)
+        # self.app.errorhandler(404)(self.not_found)
 
         # Define routes
         routes = [
