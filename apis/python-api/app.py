@@ -97,7 +97,7 @@ class TseSqlApp(object):
         # Configure Flask application
         self.app = Flask('tsesql', static_folder=None)
         self.app.json_encoder = DatesJSONEncoder
-        # self.app.errorhandler(404)(self.not_found)
+        self.app.errorhandler(404)(self.not_found)
 
         # Define routes
         routes = [
@@ -126,8 +126,8 @@ class TseSqlApp(object):
             cursor.execute(VOTER_BY_ID_QUERY, (voter_id, ))
             result = cursor.fetchone()
 
-        if result is None:
-            abort(404)
+        if not result:
+            return make_response(jsonify({}), 404)
 
         return jsonify(result)
 
@@ -150,6 +150,10 @@ class TseSqlApp(object):
         with self.db.cursor() as cursor:
             cursor.execute(VOTER_BY_NAME_QUERY, (prepared, ))
             result = cursor.fetchall()
+
+        if not result:
+            return make_response(jsonify(results=[]), 404)
+
         return jsonify(results=result)
 
     def not_found(self, error):
