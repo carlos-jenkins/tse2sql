@@ -149,7 +149,7 @@ Load the database and create a user for it:
     $ mysql -u root -p
     mysql> SET @start := NOW(); source <DIGEST>.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);
     mysql> SET @start := NOW(); source <DIGEST>.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);
-    mysql> GRANT ALL PRIVILEGES ON tse2sql.* TO 'tse2sql'@'localhost' IDENTIFIED BY '<YOUR_PASSWORD>';
+    mysql> GRANT ALL PRIVILEGES ON tsesql.* TO 'tse2sql'@'localhost' IDENTIFIED BY '<YOUR_PASSWORD>';
 
 
 Sourcing the database will take several minutes. Once done you will most likely
