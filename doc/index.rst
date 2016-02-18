@@ -15,6 +15,9 @@ Convertidor del Padron Electoral a SQL
 SQL converter of the electoral registry published by the Costa Rican Supreme
 Electoral Tribunal.
 
+.. contents:: Table of Contents
+   :local:
+
 
 Install
 =======
@@ -131,6 +134,13 @@ The schema of the database is as follows:
 You will need a functional MySQL server install, see:
 
     https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-ubuntu-14-04
+
+This database uses ``FULLTEXT INDEX`` on a InnoDB engine, and thus, requires
+at least MySQL v5.6. On Ubuntu Linux:
+
+.. code-block:: bash
+
+    sudo apt-get install mysql-server-5.6
 
 Load the database and create a user for it:
 
