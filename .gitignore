@@ -24,5 +24,8 @@ doc/tse2sql/*
 *.mysql.sql
 *.sqlite.sql
 
+# TSE
+padron*.zip
+
 # Misc
 *~

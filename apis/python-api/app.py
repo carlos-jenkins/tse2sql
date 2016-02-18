@@ -29,18 +29,22 @@ from flask.json import JSONEncoder
 from flask import Flask, abort, jsonify, make_response
 
 
-VOTER_BY_ID_QUERY = (
+BASE_QUERY = (
     'SELECT id_voter, name, family_name_1, family_name_2, sex, '
     'id_expiration, name_province, name_canton, name_district, site '
     'FROM voter '
     'JOIN district ON voter.district_id_district = district.id_district '
     'JOIN canton ON district.canton_id_canton = canton.id_canton '
     'JOIN province ON canton.province_id_province = province.id_province '
+)
+
+VOTER_BY_ID_QUERY = (
+    BASE_QUERY +
     'WHERE voter.id_voter = %s;'
 )
 
 VOTER_BY_NAME_QUERY = (
-    'SELECT * FROM voter '
+    BASE_QUERY +
     'WHERE MATCH(name, family_name_1, family_name_2) '
     'AGAINST (%s IN BOOLEAN MODE) LIMIT 30;'
 )
