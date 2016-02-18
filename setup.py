@@ -71,8 +71,8 @@ setup(
     author='Carlos Jenkins',
     author_email='carlos@jenkins.co.cr',
     description=(
-        'Convertidor a SQL del padrón electoral publicado en CSV por el '
-        'Tribunal Supremo de Elecciones'
+        'SQL converter of the electoral registry published by the Costa '
+        'Rican Supreme Electoral Tribunal.'
     ),
     long_description=read('README.rst'),
     url='https://tse2sql.readthedocs.org/',

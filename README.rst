@@ -2,8 +2,8 @@
 Convertidor del Padron Electoral a SQL
 ======================================
 
-Convertidor a SQL del padrón electoral publicado en CSV por el Tribunal Supremo
-de Elecciones
+SQL converter of the electoral registry published by the Costa Rican Supreme
+Electoral Tribunal.
 
 
 Documentation

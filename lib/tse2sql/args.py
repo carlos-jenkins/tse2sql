@@ -28,6 +28,7 @@ from os.path import isfile, abspath
 from . import __version__
 from .utils import is_url
 from .render import list_renderers
+from .readers import REGISTRY_URL
 
 
 log = logging.getLogger(__name__)
@@ -103,8 +104,8 @@ def parse_args(argv=None):
 
     parser = ArgumentParser(
         description=(
-            'Convertidor a SQL del padrón electoral publicado en CSV por el '
-            'Tribunal Supremo de Elecciones'
+            'SQL converter of the electoral registry published by the Costa '
+            'Rican Supreme Electoral Tribunal.'
         )
     )
     parser.add_argument(
@@ -132,7 +133,7 @@ def parse_args(argv=None):
         'archive',
         nargs='?',
         help='URL or path to the voters database',
-        default='http://www.tse.go.cr/zip/padron/padron_completo.zip'
+        default=REGISTRY_URL
     )
 
     args = parser.parse_args(argv)

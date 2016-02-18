@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Convertidor del Padron Electoral a SQL documentation build configuration
-# file.
+# SQL converter of the electoral registry published by the Costa Rican Supreme
+# Electoral Tribunal.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -288,8 +288,8 @@ texinfo_documents = [
         author,
         'tse2sql',
         (
-            'Convertidor a SQL del padrón electoral publicado en CSV por el '
-            'Tribunal Supremo de Elecciones'
+            'SQL converter of the electoral registry published by the Costa '
+            'Rican Supreme Electoral Tribunal.'
         ),
         'Miscellaneous'
     ),

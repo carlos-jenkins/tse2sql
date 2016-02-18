@@ -5,7 +5,7 @@
     "repo_url": "https://github.com/carlos-jenkins/tse2sql",
     "doc_url": "https://tse2sql.readthedocs.org/",
     "project_name": "Convertidor del Padron Electoral a SQL",
-    "short_description": "Convertidor a SQL del padrón electoral publicado en CSV por el Tribunal Supremo de Elecciones",
+    "short_description": "SQL converter of the electoral registry published by the Costa Rican Supreme Electoral Tribunal",
     "year": "2016",
     "version": "1.0.0"
 }

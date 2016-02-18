@@ -36,6 +36,9 @@ from .utils import get_file, count_lines
 log = getLogger(__name__)
 
 
+REGISTRY_URL = 'http://www.tse.go.cr/zip/padron/padron_completo.zip'
+
+
 class DistrictsReader(object):
     """
     Read and parse the ``Distelec.txt`` file.
