@@ -167,8 +167,13 @@ class TseSqlApp(object):
 
 
 app = TseSqlApp()
-application = app.app
 
 
 if __name__ == '__main__':
     app.run()
+else:
+    # WSGI App
+    import sys
+    import logging
+    logging.basicConfig(stream=sys.stderr)
+    application = app.app
