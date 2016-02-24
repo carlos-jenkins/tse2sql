@@ -219,13 +219,13 @@ Instructions to how to run those REST APIs is available in each subproject
 Android App
 ===========
 
-You can download the Android App *¿Dónde Voto?* here:
+You can download the Android App *MiVotico* here:
 
-    http://carlos.jenkins.co.cr/software/donde-voto.apk
+    https://play.google.com/store/apps/details?id=com.mivotico.app
 
 The project repository for this app is located at:
 
-    https://github.com/caroaguilar/tse-info-app
+    https://github.com/mivotico/mivotico-android
 
 
 Contributing
@@ -233,7 +233,7 @@ Contributing
 
 - :doc:`Developer Guide. <developer>`
 - :doc:`Internal Documentation Reference. <tse2sql/tse2sql>`
-- `Project repository. <https://github.com/carlos-jenkins/tse2sql>`_
+- `Project repository. <https://github.com/mivotico/tse2sql>`_
 
 
 License

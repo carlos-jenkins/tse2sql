@@ -29,7 +29,7 @@ This assumes that the ``tsesql`` database is already available, and a user
    sudo apt-get install python-virtualenv python3-pip
    sudo -u www-data bash
    pushd /var/www/
-   git clone https://github.com/carlos-jenkins/tse2sql.git
+   git clone https://github.com/mivotico/tse2sql.git
    pushd tse2sql/apis/python-api/
    virtualenv --no-site-packages -p /usr/bin/python3.4 venv
    source venv/bin/activate
