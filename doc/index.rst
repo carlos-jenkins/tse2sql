@@ -241,6 +241,7 @@ License
 
 ::
 
+   Copyright (C) 2016 Carolina Aguilar
    Copyright (C) 2016 Carlos Jenkins
 
    Licensed under the Apache License, Version 2.0 (the "License");
