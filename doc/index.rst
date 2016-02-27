@@ -200,32 +200,15 @@ the token is minor than 3 no operator should be added to get more accurate
 results.
 
 
-REST APIs
-=========
+Related projects
+================
 
-Under the ``apis`` folder exists two example implementations of a REST API
-using this database. One in NodeJS and one in Python-Flask. Both share the
-same behavior with two endpoints:
+    https://github.com/mivotico/
 
-.. code-block:: text
+Visit the MiVotico git repository for other related projects:
 
-    /voter/info-by-id/<voter_id>
-    /voter/info-by-name/<Name of the voter>
-
-Instructions to how to run those REST APIs is available in each subproject
-``README.rst`` file.
-
-
-Android App
-===========
-
-You can download the Android App *MiVotico* here:
-
-    https://play.google.com/store/apps/details?id=com.mivotico.app
-
-The project repository for this app is located at:
-
-    https://github.com/mivotico/mivotico-android
+- REST APIs.
+- Android App.
 
 
 Contributing
