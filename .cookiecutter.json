@@ -1,11 +1,11 @@
 {
-    "author": "Carlos Jenkins",
-    "email": "carlos@jenkins.co.cr",
+    "author": "KuraLabs S.R.L",
+    "email": "info@kuralabs.io",
     "repo_name": "tse2sql",
     "repo_url": "https://github.com/mivotico/tse2sql",
     "doc_url": "https://tse2sql.readthedocs.org/",
     "project_name": "Convertidor del Padron Electoral a SQL",
     "short_description": "SQL converter of the electoral registry published by the Costa Rican Supreme Electoral Tribunal",
-    "year": "2016",
+    "year": "2016-2017",
     "version": "1.1.0"
 }

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Carlos Jenkins
+# Copyright (C) 2016-2017 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@
 Argument management module.
 """
 
-from __future__ import unicode_literals, absolute_import
-from __future__ import print_function, division
-
 import logging
+from colorlog import ColoredFormatter
+
 from os.path import isfile, abspath
 
 from . import __version__
@@ -34,7 +33,10 @@ from .readers import REGISTRY_URL
 log = logging.getLogger(__name__)
 
 
-FORMAT = '%(asctime)s:::%(levelname)s:::%(message)s'
+FORMAT = (
+    '  %(log_color)s%(levelname)-8s%(reset)s | '
+    '%(log_color)s%(message)s%(reset)s'
+)
 V_LEVELS = {
     0: logging.ERROR,
     1: logging.WARNING,
@@ -49,11 +51,15 @@ def validate_args(args):
 
     :param args: An arguments namespace.
     :type args: :py:class:`argparse.Namespace`
+
     :return: The validated namespace.
     :rtype: :py:class:`argparse.Namespace`
     """
+    stream = logging.StreamHandler()
+    stream.setFormatter(ColoredFormatter(FORMAT))
+
     level = V_LEVELS.get(args.verbose, logging.DEBUG)
-    logging.basicConfig(format=FORMAT, level=level)
+    logging.basicConfig(handlers=[stream], level=level)
 
     log.debug('Raw arguments:\n{}'.format(args))
 
@@ -73,11 +79,15 @@ def validate_args_scrapper(args):
 
     :param args: An arguments namespace.
     :type args: :py:class:`argparse.Namespace`
+
     :return: The validated namespace.
     :rtype: :py:class:`argparse.Namespace`
     """
+    stream = logging.StreamHandler()
+    stream.setFormatter(ColoredFormatter(FORMAT))
+
     level = V_LEVELS.get(args.verbose, logging.DEBUG)
-    logging.basicConfig(format=FORMAT, level=level)
+    logging.basicConfig(handlers=[stream], level=level)
 
     log.debug('Raw arguments:\n{}'.format(args))
 
@@ -96,7 +106,8 @@ def parse_args(argv=None):
     Argument parsing routine.
 
     :param argv: A list of argument strings.
-    :rtype argv: list
+    :type argv: list
+
     :return: A parsed and verified arguments namespace.
     :rtype: :py:class:`argparse.Namespace`
     """

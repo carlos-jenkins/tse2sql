@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Carlos Jenkins
+# Copyright (C) 2016-2017 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,14 +19,13 @@
 Application entry point module.
 """
 
-from __future__ import unicode_literals, absolute_import
-from __future__ import print_function, division
-
 from os import extsep
 from os.path import basename
 from json import dumps, loads
 from logging import getLogger
 from datetime import datetime
+
+from setproctitle import setproctitle
 
 from .scrapper import scrappe_data
 from .utils import is_url, download, sha256, unzip
@@ -46,6 +45,8 @@ def main(args):
     :return: Exit code.
     :rtype: int
     """
+    setproctitle('tse2sql')
+
     start = datetime.now()
     log.debug('Start timestamp: {}'.format(start.isoformat()))
 
@@ -118,8 +119,10 @@ def main_scrapper(args):
     :return: Exit code.
     :rtype: int
     """
+    setproctitle('tse2sql-scrapper')
+
     start = datetime.now()
-    log.error('Start timestamp: {}'.format(start.isoformat()))
+    log.info('Start timestamp: {}'.format(start.isoformat()))
 
     # Get list of renderers to use
     if args.renderer is None:
@@ -146,5 +149,6 @@ def main_scrapper(args):
     print('Elapsed time: {}s'.format((end - start).seconds))
 
     return 0
+
 
 __all__ = ['main', 'main_scrapper']

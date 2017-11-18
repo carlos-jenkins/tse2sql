@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Carlos Jenkins
+# Copyright (C) 2016-2017 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@
 TSE voting center data scrapper module.
 """
 
-from __future__ import unicode_literals, absolute_import
-from __future__ import print_function, division
-
+from time import sleep
 from json import dumps
 from logging import getLogger
 from traceback import format_exc
@@ -30,14 +28,14 @@ from collections import OrderedDict
 from tqdm import tqdm
 from requests import post
 from inflection import titleize, humanize
-from six.moves.urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 
 
 log = getLogger(__name__)
 
 
 SCRAPPER_URL = (
-    'http://www.tse.go.cr/DondeVotarM/prRemoto.aspx/ObtenerDondeVotar'
+    'http://www.tse.go.cr/dondevotarp/prRemoto.aspx/ObtenerDondeVotar'
 )
 
 
@@ -102,13 +100,15 @@ def scrappe_data(samples):
 
                     pbar.update(1)
                     break
-                except:
+                except Exception:
                     log.error(
                         'Error while processing district #{} '
-                        'using voter id #{} :: (RETRIES LEFT: {})\n{}'.format(
-                            district, id_voter, retries, format_exc()
+                        'using voter id #{} :: (RETRIES LEFT: {})'.format(
+                            district, id_voter, retries
                         )
                     )
+                    log.debug(format_exc())
+                    sleep(5)
 
                 retries -= 1
 

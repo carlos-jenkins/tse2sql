@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Carlos Jenkins
+# Copyright (C) 2016-2017 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,17 +19,14 @@
 Utilities module.
 """
 
-from __future__ import unicode_literals, absolute_import
-from __future__ import print_function, division
-
 from zipfile import ZipFile
 from logging import getLogger
 from os import makedirs, listdir
+from urllib.parse import urlparse
 from hashlib import sha256 as sha256lib
 from tempfile import NamedTemporaryFile, gettempdir
 from os.path import basename, abspath, splitext, join
 
-from six.moves.urllib.parse import urlparse
 
 from tqdm import tqdm
 from requests import get

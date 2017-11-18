@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Carlos Jenkins
+# Copyright (C) 2016-2017 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@
 tse2sql module entry point.
 """
 
-from __future__ import unicode_literals, absolute_import
-from __future__ import print_function, division
-
-__author__ = 'Carlos Jenkins'
-__email__ = 'carlos@jenkins.co.cr'
-__version__ = '1.1.0'
+__author__ = 'KuraLabs S.R.L'
+__email__ = 'info@kuralabs.io'
+__version__ = '2.0.0'

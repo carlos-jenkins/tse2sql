@@ -1,4 +1,5 @@
-six
 tqdm
+colorlog
 requests
 inflection
+setproctitle
