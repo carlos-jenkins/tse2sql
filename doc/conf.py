@@ -12,8 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
-from os.path import join, dirname, abspath
+from guzzle_sphinx_theme import html_theme_path
 
 from tse2sql import __version__
 
@@ -31,12 +30,10 @@ from tse2sql import __version__
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.intersphinx',
-    'sphinxcontrib.plantuml',
-    'sphinx.ext.graphviz',
-    'autoapi.sphinx'
+    'autoapi.sphinx',
+    'plantweb.directive'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,8 +52,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Convertidor del Padron Electoral a SQL'
-copyright = '2016, Carlos Jenkins'
-author = 'Carlos Jenkins'
+copyright = '2016-2017, KuraLabs S.R.L'
+author = 'KuraLabs S.R.L'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -116,15 +113,22 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'guzzle_sphinx_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    # Set the name of the project to appear in the sidebar
+    'project_nav_name': 'Home',
+    # Google Analytics
+    'google_analytics_account': 'UA-105676084-2',
+    # Specify a base_url used to generate sitemap.xml links.
+    'base_url': 'https://docs.kuralabs.io/mivotico/tse2sql/',
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path = []
+html_theme_path = html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -312,26 +316,22 @@ texinfo_documents = [
 def setup(app):
     app.add_stylesheet('styles/custom.css')
 
-# autoapi configuration
+
+# AutoApi configuration
 autoapi_modules = {
     'tse2sql': None
 }
 
-# Configure PlantUML
-plantuml = 'java -jar ' + join(dirname(abspath(__name__)), 'plantuml.8030.jar')
-plantuml_output_format = 'svg'
+# Plantweb configuration
+plantweb_defaults = {
+    'use_cache': True,
+    'format': 'svg',
+}
 
 # Configure Graphviz
 graphviz_output_format = 'svg'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.4', None)
+    'python': ('https://docs.python.org/3', None)
 }
-
-# Setup theme if not building in readthedocs.org
-on_rtd = os.environ.get('READTHEDOCS', None) is not None
-if not on_rtd:
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]

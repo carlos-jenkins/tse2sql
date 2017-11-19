@@ -26,9 +26,9 @@ pipeline {
                 unstash 'docs'
                 sh '''
                     umask 022
-                    mkdir -p /deploy/docs/mivotico-tse2sql
-                    rm -rf /deploy/docs/mivotico-tse2sql/*
-                    cp -R .tox/env/tmp/html/* /deploy/docs/mivotico-tse2sql/
+                    mkdir -p /deploy/docs/mivotico/tse2sql
+                    rm -rf /deploy/docs/mivotico/tse2sql/*
+                    cp -R .tox/env/tmp/html/* /deploy/docs/mivotico/tse2sql/
                 '''
             }
         }
