@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+import logging
+from json import dumps
+
+from requests import post
+from pprintpp import pprint
+from colorlog import ColoredFormatter
+
+
+FORMAT = (
+    '  %(log_color)s%(levelname)-8s%(reset)s | '
+    '%(log_color)s%(message)s%(reset)s'
+)
+V_LEVELS = {
+    0: logging.ERROR,
+    1: logging.WARNING,
+    2: logging.INFO,
+    3: logging.DEBUG,
+}
+
+
+SCRAPPER_URL = (
+    'http://www.tse.go.cr/dondevotarp/prRemoto.aspx/ObtenerDondeVotar'
+)
+HEADERS = {'Content-Type': 'application/json'}
+
+
+log = logging.getLogger(__name__)
+
+
+def parse_args(argv=None):
+    """
+    Argument parsing routine.
+
+    :param argv: A list of argument strings.
+    :type argv: list
+
+    :return: A parsed and verified arguments namespace.
+    :rtype: :py:class:`argparse.Namespace`
+    """
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(
+        description=(
+            'TSE REST API Client Tool'
+        )
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        help='Increase verbosity level',
+        default=0,
+        action='count'
+    )
+    parser.add_argument(
+        'ids',
+        nargs='+',
+        help='Identity Numbers to Query',
+    )
+
+    args = parser.parse_args(argv)
+    args = validate_args(args)
+    return args
+
+
+def validate_args(args):
+    """
+    Validate that arguments are valid.
+
+    :param args: An arguments namespace.
+    :type args: :py:class:`argparse.Namespace`
+
+    :return: The validated namespace.
+    :rtype: :py:class:`argparse.Namespace`
+    """
+    stream = logging.StreamHandler()
+    stream.setFormatter(ColoredFormatter(FORMAT))
+
+    level = V_LEVELS.get(args.verbose, logging.DEBUG)
+    logging.basicConfig(handlers=[stream], level=level)
+
+    log.debug('Raw arguments:\n{}'.format(args))
+
+    return args
+
+
+def main(args):
+    """
+    Main function.
+
+    Uses passed ids in args to query the TSE REST API.
+    """
+    for idnum in args.ids:
+        payload = dumps({'numeroCedula': str(idnum)})
+
+        response = post(
+            SCRAPPER_URL,
+            headers=HEADERS,
+            data=payload
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        pprint(data)
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    exit(main(args))
