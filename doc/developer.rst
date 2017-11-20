@@ -1,7 +1,5 @@
 .. toctree::
 
-.. highlight:: sh
-
 ===============
 Developer Guide
 ===============
@@ -10,67 +8,76 @@ Developer Guide
 Setup Development Environment
 =============================
 
-#. Install ``pip`` and ``tox``:
+#. Install ``pip3`` and development dependencies:
 
-   ::
+   .. code-block:: sh
 
-      sudo apt-get install python-pip
-      sudo pip install tox
+      wget https://bootstrap.pypa.io/get-pip.py
+      sudo python3 get-pip.py
+      sudo pip3 install tox flake8 pep8-naming
 
-#. Configure git pre-commit hook:
+#. Install a C/C++ toolchain for native extensions and cythonized binary wheel
+   packaging:
 
-   ::
+   .. code-block:: sh
 
-      sudo pip install flake8 pep8-naming
-      flake8 --install-hook
-      git config flake8.strict true
+      sudo apt install python3-dev build-essential cmake graphviz
 
+#. Optionally, it is recommended to install the ``webdev`` package to run a
+   development web server from a local directory:
 
-Launching executable from repository
-====================================
+   .. code-block:: sh
 
-To execute ``tse2sql`` from the repository you can:
-
-#. Install dependencies system-wide:
-
-   ::
-
-      sudo pip install -r requirements.txt
-      PYTHONPATH=lib/ bin/tse2sql
-
-#. Load the ``py34`` virtual environment:
-
-   ::
-
-      tox -e py34
-      source .tox/py34/bin/activate
-      PYTHONPATH=lib/ bin/tse2sql
+      sudo pip3 install webdev
+      webdev .tox/doc/tmp/html
 
 
-Building Documentation
-======================
+Building Package
+================
 
-::
+.. code-block:: sh
 
-   tox -e doc
+   tox -e build
 
-Output will be available at ``.tox/doc/tmp/html``. It is recommended to install
-the ``webdev`` package:
+Output will be available at ``dist/``.
 
-::
+- Source distribution: ``tse2sql-<version>.tar.gz``.
+- Python wheel: ``tse2sql-<version>-py3-none-any.whl``
+- Binary wheel: ``tse2sql-<version>-cp35-cp35m-linux_x86_64.whl``
 
-   sudo pip install webdev
+.. note::
 
-So a development web server can serve any location like this:
-
-::
-
-   $ webdev .tox/doc/tmp/html
+   The tags of the binary wheel will change depending on the interpreter and
+   operating system you build the binary wheel on.
 
 
 Running Test Suite
 ==================
 
-::
+.. code-block:: sh
 
-   tox -e py27,py34
+   tox -e test
+
+Output will be available at ``.tox/test/tmp/``.
+
+.. code-block:: sh
+
+   webdev .tox/doc/tmp/
+
+- Test results: ``tests.xml``.
+- Coverage results: ``coverage.xml``.
+- Coverage report: ``coverage.html``.
+
+
+Building Documentation
+======================
+
+.. code-block:: sh
+
+   tox -e doc
+
+Output will be available at ``.tox/doc/tmp/html``.
+
+.. code-block:: sh
+
+   webdev .tox/doc/tmp/html
