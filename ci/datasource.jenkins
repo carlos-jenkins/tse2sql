@@ -52,7 +52,7 @@ pipeline {
                     popd
                     popd
                 '''
-                stash name: 'data', includes: 'datasrc/*'
+                stash name: 'data', includes: 'datasrc/**/*'
             }
         }
 
