@@ -1,0 +1,86 @@
+pipeline {
+    agent none
+
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'kuralabs/python3-dev:latest'
+                }
+            }
+
+            steps {
+                sh '''
+                    set -o errexit
+                    set -o nounset
+
+                    echo "Installing tse2sql ..."
+                    tox -e build
+                    pip3 install dist/tse2sql-*.whl
+
+                    SOURCE_URL=http://www.tse.go.cr/zip/padron/padron_completo.zip
+                    ARCHIVE_URL=https://archive.kuralabs.io/mivotico/tse2sql
+
+                    mkdir datasrc
+                    pushd datasrc
+
+                    echo "Downloading new data source ..."
+                    curl --output padron.zip "${SOURCE_URL}"
+
+                    echo "Calculating data hash ..."
+                    DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
+                    DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}/${DATA_HASH}.zip" | grep "404 Not Found")
+
+                    if [ -z "${DATA_AVAILABLE}" ]; then
+                        echo "Data source ${DATA_HASH} already processed. Exiting ..."
+                        exit 0
+                    fi
+
+                    echo "New data source ${DATA_HASH}. Processing ..."
+                    mkdir "${DATA_HASH}"
+                    pushd "${DATA_HASH}"
+                    mv ../padron.zip "${DATA_HASH}.zip"
+                    tse2sql "${DATA_HASH}.zip"
+
+                    echo "Base data collected. Starting scrapper ..."
+                    tse2sql-scrapper "${DATA_HASH}.samples.json"
+
+                    echo "Removing extracted data ..."
+                    rm -r "${DATA_HASH}"
+
+                    popd
+                    popd
+                '''
+                stash name: 'data', includes: 'datasrc/*'
+            }
+        }
+
+        stage('Publish') {
+            agent { label 'archive' }
+            when { branch 'master' }
+            steps {
+                unstash 'data'
+                sh '''
+                    umask 022
+                    mkdir -p /deploy/archive/mivotico/tse2sql
+                    cp -R datasrc/* /deploy/archive/mivotico/tse2sql/
+                '''
+            }
+        }
+    }
+    post {
+        success {
+            slackSend (
+                color: '#00FF00',
+                message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+            )
+        }
+
+        failure {
+            slackSend (
+                color: '#FF0000',
+                message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+            )
+        }
+    }
+}
