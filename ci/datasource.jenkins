@@ -58,7 +58,6 @@ pipeline {
 
         stage('Publish') {
             agent { label 'archive' }
-            when { branch 'master' }
             steps {
                 unstash 'data'
                 sh '''
