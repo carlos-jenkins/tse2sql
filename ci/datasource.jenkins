@@ -30,7 +30,9 @@ pipeline {
 
                     echo "Calculating data hash ..."
                     DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
-                    DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}/${DATA_HASH}/${DATA_HASH}.zip" | grep "404 Not Found")
+
+                    echo "Checking archive for ${DATA_HASH} ..."
+                    DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}/${DATA_HASH}/${DATA_HASH}.zip" | grep "404 Not Found" || true)
 
                     if [ -z "${DATA_AVAILABLE}" ]; then
                         echo "Data source ${DATA_HASH} already processed. Exiting ..."
