@@ -9,7 +9,17 @@ Electoral Tribunal.
 Documentation
 =============
 
-    https://tse2sql.readthedocs.org/
+Full documentation, including schema, workflow and queries is available at:
+
+    https://docs.kuralabs.io/mivotico/tse2sql/
+
+
+Continuous Integration
+======================
+
+Latest builds are available at:
+
+    https://archive.kuralabs.io/mivotico/tse2sql/
 
 
 License

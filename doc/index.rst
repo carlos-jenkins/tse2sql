@@ -203,11 +203,11 @@ results.
 Related projects
 ================
 
-    https://github.com/mivotico/
+    https://github.com/kuralabs/
 
-Visit the MiVotico git repository for other related projects:
+Visit the MiVotico git repositories for other related projects:
 
-- REST APIs.
+- REST API.
 - Android App.
 
 
@@ -216,7 +216,7 @@ Contributing
 
 - :doc:`Developer Guide. <developer>`
 - :doc:`Internal Documentation Reference. <tse2sql/tse2sql>`
-- `Project repository. <https://github.com/mivotico/tse2sql>`_
+- `Project repository. <https://github.com/kuralabs/mivotico-tse2sql>`_
 
 
 License

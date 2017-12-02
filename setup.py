@@ -345,7 +345,7 @@ setup(
         'Rican Supreme Electoral Tribunal.'
     ),
     long_description=read('README.rst'),
-    url='https://tse2sql.readthedocs.org/',
+    url='https://docs.kuralabs.io/mivotico/tse2sql/',
     keywords='tse2sql',
 
     classifiers=[
