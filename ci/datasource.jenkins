@@ -14,6 +14,7 @@ pipeline {
 
                     set -o errexit
                     set -o nounset
+                    set -o xtrace
 
                     echo "Installing tse2sql ..."
                     tox -e build
@@ -69,7 +70,12 @@ pipeline {
             agent { label 'archive' }
             steps {
                 unstash 'data'
-                sh '''
+                sh '''#!/usr/bin/env bash
+
+                    set -o errexit
+                    set -o nounset
+                    set -o xtrace
+
                     umask 022
                     mkdir -p /deploy/archive/mivotico/tse2sql
                     cp -R datasrc/* /deploy/archive/mivotico/tse2sql/
