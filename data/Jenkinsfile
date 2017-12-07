@@ -5,7 +5,8 @@ pipeline {
         stage('Build') {
             agent {
                 docker {
-                    image 'kuralabs/python3-dev:latest'
+                    image 'kuralabs/mivotico-tse2sql:latest'
+                    args '--init'
                 }
             }
 
@@ -15,6 +16,9 @@ pipeline {
                     set -o errexit
                     set -o nounset
                     set -o xtrace
+
+                    echo "Executing entrypoint ..."
+                    entrypoint.sh
 
                     echo "Installing tse2sql ..."
                     tox -e build

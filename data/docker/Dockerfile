@@ -1,0 +1,37 @@
+FROM kuralabs/python3-dev:latest
+LABEL mantainer="info@kuralabs.io"
+
+
+# -----
+
+USER root
+ENV DEBIAN_FRONTEND noninteractive
+
+
+# Install supervisord
+RUN apt-get update && apt-get install --yes \
+        software-properties-common \
+        apt-transport-https \
+        supervisor dirmngr
+
+
+# Install MySQL
+RUN echo 'mysql-server-5.7 mysql-server/root_password_again password defaultrootpwd' | debconf-set-selections && \
+    echo 'mysql-server-5.7 mysql-server/root_password password defaultrootpwd' | debconf-set-selections && \
+    apt-get update && apt-get install --yes \
+        mysql-server-5.7 && \
+    mkdir -p /var/lib/mysql /var/run/mysqld /var/mysqld/ && \
+    chown mysql:mysql /var/lib/mysql /var/run/mysqld /var/mysqld/
+
+
+# Install mongodb
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6 && \
+    echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" | tee /etc/apt/sources.list.d/mongodb.list && \
+    apt-get update && apt-get install --yes \
+        mongodb-org
+
+
+# Install supervisord configuration and entrypoint script
+COPY supervisord/*.conf /etc/supervisor/conf.d/
+COPY entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
