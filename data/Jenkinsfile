@@ -57,11 +57,32 @@ pipeline {
                     mv ../padron.zip "${DATA_HASH}.zip"
                     tse2sql "${DATA_HASH}.zip"
 
+                    echo "Removing extracted data ..."
+                    rm -r "${DATA_HASH}"
+
                     echo "Base data collected. Starting scrapper ..."
                     tse2sql-scrapper "${DATA_HASH}.samples.json"
 
-                    echo "Removing extracted data ..."
-                    rm -r "${DATA_HASH}"
+                    echo "Creating MySQL database ..."
+                    echo -e "[client]\nuser=root\npassword=defaultrootpwd" > ~/.my.cnf
+                    echo "CREATE DATABASE tse2sql;" | mysql
+
+                    echo "Inserting new data into database ..."
+                    echo "SET @start := NOW(); source ${DATA_HASH}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql --database="tse2sql"
+
+                    echo "Inserting scrapped data into database ..."
+                    echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql --database="tse2sql"
+
+                    echo "Compressing MySQL data for archival ..."
+                    tar -zcvf "${DATA_HASH}.mysql.tar.gz" "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
+                    rm "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
+
+                    echo "Executing the data bulldozer ..."
+                    pip3 install -r tools/bulldozer/requirements.txt
+                    ./tools/bulldozer/bulldozer
+
+                    echo "Compressing MongoDB data for archival ..."
+                    mongodump --archive="${DATA_HASH}.mongodb.gz" --gzip --db tse2sql
 
                     popd
                     popd

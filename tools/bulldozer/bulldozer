@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+# The bulldozer is a script that consumes a TSE MySQL database and flats and
+# denormalized the data into a MongoDB database.
+
+from pymongo import MongoClient
+from pymysql import connect, cursors
+
+
+BASE_QUERY = (
+    'SELECT id_voter, name, family_name_1, family_name_2, sex, '
+    'id_expiration, name_province, name_canton, name_district, site, '
+    'voting_center_name, voting_center_address, '
+    'voting_center_latitude, voting_center_longitude '
+    'FROM voter '
+    'JOIN district ON voter.district_id_district = district.id_district '
+    'JOIN canton ON district.canton_id_canton = canton.id_canton '
+    'JOIN province ON canton.province_id_province = province.id_province '
+    'ORDER BY id_voter ASC;'
+)
+
+
+def flat_data(mysql, mongo):
+    flatdb = mongo.tse2sql.voters
+
+    with mysql.cursor() as cursor:
+        cursor.execute(BASE_QUERY)
+
+        row_count = 0
+        inserted_id = 0
+
+        for row in cursor:
+            row['_id'] = row['id_voter']
+            inserted_id = flatdb.insert_one(row)  # noqa
+
+            row_count += 1
+            if (row_count % 1000) == 0:
+                print('Inserted ID {} at iteration {} ...'.format(
+                    inserted_id, row_count
+                ))
+
+        print('Flattening finished with ID {} at iteration {}!'.format(
+            inserted_id, row_count
+        ))
+
+
+def main():
+    mysql = None
+    mongo = None
+
+    try:
+        mysql = connect(
+            read_default_file='~/.my.cnf',
+            db='tsesql',
+            charset='utf8mb4',
+            cursorclass=cursors.DictCursor
+        )
+
+        mongo = MongoClient(
+            'mongodb://localhost:27017/'
+        )
+
+        flat_data(mysql, mongo)
+
+    finally:
+        if mysql is not None:
+            mysql.close()
+        if mongo is not None:
+            mongo.close()
+
+
+if __name__ == '__main__':
+    main()
