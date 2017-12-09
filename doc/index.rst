@@ -109,7 +109,7 @@ Currently there is a web service available at:
 
 .. code-block:: text
 
-    http://www.tse.go.cr/DondeVotarM/prRemoto.aspx/ObtenerDondeVotar
+    http://www.tse.go.cr/dondevotarp/prRemoto.aspx/ObtenerDondeVotar
 
 That allows to grab this information as following:
 

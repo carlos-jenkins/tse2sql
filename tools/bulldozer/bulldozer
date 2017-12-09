@@ -3,8 +3,12 @@
 # The bulldozer is a script that consumes a TSE MySQL database and flats and
 # denormalized the data into a MongoDB database.
 
+from datetime import datetime, time
+
 from pymongo import MongoClient
 from pymysql import connect, cursors
+from setproctitle import setproctitle
+from bson.decimal128 import Decimal128
 
 
 BASE_QUERY = (
@@ -23,15 +27,50 @@ BASE_QUERY = (
 def flat_data(mysql, mongo):
     flatdb = mongo.tse2sql.voters
 
+    print('Creating cursor ...')
     with mysql.cursor() as cursor:
+
+        print('Executing query ...')
         cursor.execute(BASE_QUERY)
 
         row_count = 0
         inserted_id = 0
 
+        print('Starting iteration ...')
         for row in cursor:
+
             row['_id'] = row['id_voter']
-            inserted_id = flatdb.insert_one(row)  # noqa
+
+            # MongoDB doesn't support a date data type, convert to datetime
+            row['id_expiration'] = datetime.combine(
+                row['id_expiration'], time.min
+            )
+
+            # Convert Decimals to bson Decimal128
+            for key in ['voting_center_latitude', 'voting_center_longitude']:
+                row[key] = Decimal128(row[key])
+
+            # Row is in the form of:
+            #
+            # {
+            #     'id_voter': 112121212,
+            #     'name': 'Jose',
+            #     'family_name_1': 'Apellido1',
+            #     'family_name_2': 'Apellido2',
+            #     'sex': 1,  # <- 1 -> Female, 2 -> Male
+            #     'id_expiration': datetime.date(2023, 11, 19),
+            #     'name_province': 'San Jose',
+            #     'name_canton': 'Santa Ana',
+            #     'name_district': 'Piedades',
+            #     'site': 1220,
+            #     'voting_center_name': 'Escuela Ezequiel Morales Aguilar',
+            #     'voting_center_address': 'Costado sur de iglesia catolica',
+            #     'voting_center_latitude': Decimal('9.928517'),
+            #     'voting_center_longitude': Decimal('-84.217010'),
+            #     '_id': 100339724
+            # }
+
+            inserted_id = flatdb.insert_one(row).inserted_id
 
             row_count += 1
             if (row_count % 1000) == 0:
@@ -45,21 +84,27 @@ def flat_data(mysql, mongo):
 
 
 def main():
+    setproctitle('bulldozer')
+    print('Starting the bulldozer ...')
+
     mysql = None
     mongo = None
 
     try:
+        print('Connecting to MySQL ...')
         mysql = connect(
             read_default_file='~/.my.cnf',
-            db='tsesql',
+            db='tse2sql',
             charset='utf8mb4',
             cursorclass=cursors.DictCursor
         )
 
+        print('Connecting to MongoDB ...')
         mongo = MongoClient(
             'mongodb://localhost:27017/'
         )
 
+        print('Flatting data ...')
         flat_data(mysql, mongo)
 
     finally:

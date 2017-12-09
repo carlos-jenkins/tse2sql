@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+from json import dumps
+from collections import OrderedDict
+
+
+def name_to_code(name):
+    return 'p' + ''.join(word[0].lower() for word in name.split())
+
+
+parties = OrderedDict([
+    (name_to_code(pdata['name']), pdata)
+    for pdata in [
+        {
+            'name': 'Acción Ciudadana',
+            'colors': {
+                'primary': '#ed1b34',
+                'secondary': '#fef200',
+            },
+        }, {
+            'name': 'Alianza Demócrata Cristiana',
+            'colors': {
+                'primary': '#0055a5',
+                'secondary': '#fecc17',
+            },
+        }, {
+            'name': 'Accesibilidad sin Exclusión',
+            'colors': {
+                'primary': '#0062a8',
+                'secondary': '#ffffff',
+            },
+        }, {
+            'name': 'De los Trabajadores',
+            'colors': {
+                'primary': '#da2127',
+                'secondary': '#fef200',
+            },
+        }, {
+            'name': 'Frente Amplio',
+            'colors': {
+                'primary': '#f6ed08',
+                'secondary': '#000000',
+            },
+        }, {
+            'name': 'Integración Nacional',
+            'colors': {
+                'primary': '#006cb7',
+                'secondary': '#74beea',
+            },
+        }, {
+            'name': 'Liberación Nacional',
+            'colors': {
+                'primary': '#00a850',
+                'secondary': '#ffffff',
+            },
+        }, {
+            'name': 'Movimiento Libertario',
+            'colors': {
+                'primary': '#d91e25',
+                'secondary': '#ffffff',
+            },
+        }, {
+            'name': 'Nueva Generación',
+            'colors': {
+                'primary': '#0064b3',
+                'secondary': '#de612d',
+            },
+        }, {
+            'name': 'Renovación Costarricense',
+            'colors': {
+                'primary': '#0072bb',
+                'secondary': '#ffffff',
+            },
+        }, {
+            'name': 'Restauración Nacional',
+            'colors': {
+                'primary': '#0072bb',
+                'secondary': '#fee800',
+            },
+        }, {
+            'name': 'Republicano Social Cristiano',
+            'colors': {
+                'primary': '#26247b',
+                'secondary': '#fff200',
+            },
+        }, {
+            'name': 'Unidad Social Cristiana',
+            'colors': {
+                'primary': '#ed1b24',
+                'secondary': '#0065b3',
+            },
+        },
+    ]
+])
+
+
+with open('parties.json', mode='wt', encoding='utf-8') as fd:
+    content = dumps(
+        parties,
+        indent=4,
+        separators=(',', ': '),
+        ensure_ascii=False,
+    )
+    fd.write(content)
+    print(content)

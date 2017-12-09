@@ -39,7 +39,7 @@ pipeline {
                     echo "Data hash : ${DATA_HASH}"
                     echo "{" > latest.json
                     echo "    \\"latest\\": \\"${DATA_HASH}\\"," >> latest.json
-                    echo "    \\"date\\": \\"$(date --iso-8601=min)\\"" >> latest.json
+                    echo "    \\"date\\": \\"$(TZ=America/Costa_Rica date --iso-8601=min)\\"" >> latest.json
                     echo "}" >> latest.json
 
                     echo "Checking archive for ${DATA_HASH} ..."
@@ -63,23 +63,22 @@ pipeline {
                     echo "Base data collected. Starting scrapper ..."
                     tse2sql-scrapper "${DATA_HASH}.samples.json"
 
-                    echo "Creating MySQL database ..."
+                    echo "Creating credentials file for MySQL ..."
                     echo -e "[client]\nuser=root\npassword=defaultrootpwd" > ~/.my.cnf
-                    echo "CREATE DATABASE tse2sql;" | mysql
 
                     echo "Inserting new data into database ..."
-                    echo "SET @start := NOW(); source ${DATA_HASH}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql --database="tse2sql"
+                    echo "SET @start := NOW(); source ${DATA_HASH}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
                     echo "Inserting scrapped data into database ..."
-                    echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql --database="tse2sql"
+                    echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
                     echo "Compressing MySQL data for archival ..."
                     tar -zcvf "${DATA_HASH}.mysql.tar.gz" "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
                     rm "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
 
                     echo "Executing the data bulldozer ..."
-                    pip3 install -r tools/bulldozer/requirements.txt
-                    ./tools/bulldozer/bulldozer
+                    pip3 install -r ./../../tools/bulldozer/requirements.txt
+                    ./../../tools/bulldozer/bulldozer
 
                     echo "Compressing MongoDB data for archival ..."
                     mongodump --archive="${DATA_HASH}.mongodb.gz" --gzip --db tse2sql

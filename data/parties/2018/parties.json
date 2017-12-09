@@ -1,0 +1,93 @@
+{
+    "pac": {
+        "name": "Acción Ciudadana",
+        "colors": {
+            "secondary": "#fef200",
+            "primary": "#ed1b34"
+        }
+    },
+    "padc": {
+        "name": "Alianza Demócrata Cristiana",
+        "colors": {
+            "secondary": "#fecc17",
+            "primary": "#0055a5"
+        }
+    },
+    "pase": {
+        "name": "Accesibilidad sin Exclusión",
+        "colors": {
+            "secondary": "#ffffff",
+            "primary": "#0062a8"
+        }
+    },
+    "pdlt": {
+        "name": "De los Trabajadores",
+        "colors": {
+            "secondary": "#fef200",
+            "primary": "#da2127"
+        }
+    },
+    "pfa": {
+        "name": "Frente Amplio",
+        "colors": {
+            "secondary": "#000000",
+            "primary": "#f6ed08"
+        }
+    },
+    "pin": {
+        "name": "Integración Nacional",
+        "colors": {
+            "secondary": "#74beea",
+            "primary": "#006cb7"
+        }
+    },
+    "pln": {
+        "name": "Liberación Nacional",
+        "colors": {
+            "secondary": "#ffffff",
+            "primary": "#00a850"
+        }
+    },
+    "pml": {
+        "name": "Movimiento Libertario",
+        "colors": {
+            "secondary": "#ffffff",
+            "primary": "#d91e25"
+        }
+    },
+    "png": {
+        "name": "Nueva Generación",
+        "colors": {
+            "secondary": "#de612d",
+            "primary": "#0064b3"
+        }
+    },
+    "prc": {
+        "name": "Renovación Costarricense",
+        "colors": {
+            "secondary": "#ffffff",
+            "primary": "#0072bb"
+        }
+    },
+    "prn": {
+        "name": "Restauración Nacional",
+        "colors": {
+            "secondary": "#fee800",
+            "primary": "#0072bb"
+        }
+    },
+    "prsc": {
+        "name": "Republicano Social Cristiano",
+        "colors": {
+            "secondary": "#fff200",
+            "primary": "#26247b"
+        }
+    },
+    "pusc": {
+        "name": "Unidad Social Cristiana",
+        "colors": {
+            "secondary": "#0065b3",
+            "primary": "#ed1b24"
+        }
+    }
+}

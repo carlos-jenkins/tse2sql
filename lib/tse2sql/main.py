@@ -105,11 +105,6 @@ def main(args):
     return 0
 
 
-SCRAPPER_URL = (
-    'http://www.tse.go.cr/DondeVotarM/prRemoto.aspx/ObtenerDondeVotar'
-)
-
-
 def main_scrapper(args):
     """
     Scrapper main function.

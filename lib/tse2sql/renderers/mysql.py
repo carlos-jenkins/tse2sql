@@ -38,20 +38,20 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
--- Schema tsesql
+-- Schema tse2sql
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `tsesql` ;
+DROP SCHEMA IF EXISTS `tse2sql` ;
 
 -- -----------------------------------------------------
--- Schema tsesql
+-- Schema tse2sql
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `tsesql` DEFAULT CHARACTER SET utf8 ;
-USE `tsesql` ;
+CREATE SCHEMA IF NOT EXISTS `tse2sql` DEFAULT CHARACTER SET utf8 ;
+USE `tse2sql` ;
 
 -- -----------------------------------------------------
--- Table `tsesql`.`province`
+-- Table `tse2sql`.`province`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsesql`.`province` (
+CREATE TABLE IF NOT EXISTS `tse2sql`.`province` (
   `id_province` TINYINT(1) UNSIGNED NOT NULL,
   `name_province` VARCHAR(10) NOT NULL,
   PRIMARY KEY (`id_province`))
@@ -60,9 +60,9 @@ COMMENT = 'Costa Rica has 7 provinces, plus one code for consulates.';
 
 
 -- -----------------------------------------------------
--- Table `tsesql`.`canton`
+-- Table `tse2sql`.`canton`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsesql`.`canton` (
+CREATE TABLE IF NOT EXISTS `tse2sql`.`canton` (
   `id_canton` SMALLINT(3) UNSIGNED NOT NULL,
   `name_canton` VARCHAR(20) NOT NULL,
   `province_id_province` TINYINT(1) UNSIGNED NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `tsesql`.`canton` (
   INDEX `fk_canton_province_idx` (`province_id_province` ASC),
   CONSTRAINT `fk_canton_province`
     FOREIGN KEY (`province_id_province`)
-    REFERENCES `tsesql`.`province` (`id_province`)
+    REFERENCES `tse2sql`.`province` (`id_province`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -78,9 +78,9 @@ COMMENT = 'As of 02/2016 Costa Rica has 81 cantons (124 if including consulates)
 
 
 -- -----------------------------------------------------
--- Table `tsesql`.`district`
+-- Table `tse2sql`.`district`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsesql`.`district` (
+CREATE TABLE IF NOT EXISTS `tse2sql`.`district` (
   `id_district` MEDIUMINT(6) UNSIGNED NOT NULL,
   `name_district` VARCHAR(34) NOT NULL,
   `canton_id_canton` SMALLINT(3) UNSIGNED NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `tsesql`.`district` (
   INDEX `fk_district_canton_idx` (`canton_id_canton` ASC),
   CONSTRAINT `fk_district_canton`
     FOREIGN KEY (`canton_id_canton`)
-    REFERENCES `tsesql`.`canton` (`id_canton`)
+    REFERENCES `tse2sql`.`canton` (`id_canton`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -100,9 +100,9 @@ COMMENT = 'As of 02/2016 Costa Rica has 2068 districts (2123 if including consul
 
 
 -- -----------------------------------------------------
--- Table `tsesql`.`voter`
+-- Table `tse2sql`.`voter`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsesql`.`voter` (
+CREATE TABLE IF NOT EXISTS `tse2sql`.`voter` (
   `id_voter` INT UNSIGNED NOT NULL,
   `sex` TINYINT(1) UNSIGNED NOT NULL,
   `id_expiration` DATE NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `tsesql`.`voter` (
   FULLTEXT INDEX `full_name` (`name` ASC, `family_name_1` ASC, `family_name_2` ASC),
   CONSTRAINT `fk_voter_district`
     FOREIGN KEY (`district_id_district`)
-    REFERENCES `tsesql`.`district` (`id_district`)
+    REFERENCES `tse2sql`.`district` (`id_district`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -126,7 +126,7 @@ ENGINE = InnoDB;
 
 SECTION_HEADER = """\
 -- -----------------------------------------------------
--- Data for table `tsesql`.`{name}`
+-- Data for table `tse2sql`.`{name}`
 -- -----------------------------------------------------
 """
 
@@ -316,6 +316,7 @@ def write_mysql_scrapper(fd, data):
     )
 
     fd.write(SECTION_HEADER.format(name='district'))
+    fd.write('USE `tse2sql` ;\n')
     fd.write('SET AUTOCOMMIT=0;\n')
 
     with tqdm(

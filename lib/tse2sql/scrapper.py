@@ -69,7 +69,7 @@ def scrappe_data(samples):
         for district, id_voter in samples.items():
             payload = dumps({'numeroCedula': str(id_voter)})
 
-            retries = 5
+            retries = 10
             while retries > 0:
 
                 try:
@@ -108,9 +108,15 @@ def scrappe_data(samples):
                         )
                     )
                     log.debug(format_exc())
-                    sleep(5)
+                    sleep(10)
 
                 retries -= 1
+
+            else:
+                err = 'Unable to get data for district {} using {}'.format(
+                    district, id_voter
+                )
+                raise Exception(err)
 
     return scrapped_data
 
