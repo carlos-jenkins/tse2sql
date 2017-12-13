@@ -66,11 +66,15 @@ def scrappe_data(samples):
             leave=True, desc='POST requests') as pbar:
 
         # Iterate samples to grab data from web service
-        for district, id_voter in samples.items():
-            payload = dumps({'numeroCedula': str(id_voter)})
+        for district, voters_ids in samples.items():
+
+            num_sample_voters = len(voters_ids)
 
             retries = 10
             while retries > 0:
+
+                id_voter = voters_ids[retries % num_sample_voters]
+                payload = dumps({'numeroCedula': str(id_voter)})
 
                 try:
                     response = post(
@@ -114,7 +118,7 @@ def scrappe_data(samples):
 
             else:
                 err = 'Unable to get data for district {} using {}'.format(
-                    district, id_voter
+                    district, voters_ids
                 )
                 raise Exception(err)
 

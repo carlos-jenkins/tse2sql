@@ -298,8 +298,10 @@ class VotersReader(object):
                 # data?
 
                 # Include sample if not present
-                if parsed['district'] not in self.samples:
-                    self.samples[parsed['district']] = parsed['id']
+                if district_code not in self.samples:
+                    self.samples[district_code] = [parsed['id']]
+                elif len(self.samples[district_code]) < 3:
+                    self.samples[district_code].append(parsed['id'])
 
                 return parsed
 
