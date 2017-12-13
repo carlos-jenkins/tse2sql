@@ -33,4 +33,6 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF505
 # Install supervisord configuration and entrypoint script
 COPY supervisord/*.conf /etc/supervisor/conf.d/
 COPY entrypoint.sh /usr/local/bin/
+
+USER python3
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
