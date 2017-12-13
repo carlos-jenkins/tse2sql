@@ -60,6 +60,7 @@ def scrappe_data(samples):
 
     headers = {'Content-Type': 'application/json'}
     scrapped_data = OrderedDict()
+    unscrapped_data = OrderedDict()
 
     with tqdm(
             total=len(samples), unit='r',
@@ -117,12 +118,12 @@ def scrappe_data(samples):
                 retries -= 1
 
             else:
-                err = 'Unable to get data for district {} using {}'.format(
+                log.error('Unable to get data for district {} using {}'.format(
                     district, voters_ids
-                )
-                raise Exception(err)
+                ))
+                unscrapped_data[district] = voters_ids
 
-    return scrapped_data
+    return scrapped_data, unscrapped_data
 
 
 __all__ = ['scrappe_data']

@@ -131,13 +131,22 @@ def main_scrapper(args):
         samples = loads(fd.read())
 
     # Execute data scrapper
-    scrapped_data = scrappe_data(samples)
+    scrapped_data, unscrapped_data = scrappe_data(samples)
 
     # Generate SQL output
     for rdr in renderers:
         print('Writing output for {} ...'.format(rdr))
         with open('{}.scrapped.{}.sql'.format(digest, rdr), 'w') as sqlfile:
             render_scrapped(scrapped_data, rdr, sqlfile)
+
+    # Generate JSON output of unscrapped data
+    with open(
+            '{}.unscrapped.json'.format(digest),
+            mode='wt', encoding='utf-8'
+    ) as unscrappedfd:
+        unscrappedfd.write(
+            dumps(unscrapped_data, indent=4, ensure_ascii=False)
+        )
 
     # Log elapsed time
     end = datetime.now()
