@@ -48,6 +48,11 @@ def flat_data(mysql, mongo):
 
             # Convert Decimals to bson Decimal128
             for key in ['voting_center_latitude', 'voting_center_longitude']:
+
+                # Some districts may have invalid coordinates if the scrapper
+                # failed on them.
+                if row[key] is None:
+                    continue
                 row[key] = Decimal128(row[key])
 
             # Row is in the form of:
