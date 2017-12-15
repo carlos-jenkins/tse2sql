@@ -96,7 +96,7 @@ def main():
             read_default_file='~/.my.cnf',
             db='tse2sql',
             charset='utf8mb4',
-            cursorclass=cursors.DictCursor
+            cursorclass=cursors.SSDictCursor,
         )
 
         print('Connecting to MongoDB ...')
