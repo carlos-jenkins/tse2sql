@@ -49,4 +49,5 @@ done
 echo ""
 
 
-exec "$@"
+echo "Finished initialization ..."
+exec "/bin/bash"
