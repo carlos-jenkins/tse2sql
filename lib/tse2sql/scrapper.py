@@ -63,8 +63,9 @@ def scrappe_data(samples):
     unscrapped_data = OrderedDict()
 
     with tqdm(
-            total=len(samples), unit='r',
-            leave=True, desc='POST requests') as pbar:
+        total=len(samples), unit='r', ascii=True, leave=True,
+        desc='POST requests'
+    ) as pbar:
 
         # Iterate samples to grab data from web service
         for district, voters_ids in samples.items():
@@ -118,9 +119,11 @@ def scrappe_data(samples):
                 retries -= 1
 
             else:
-                log.error('Unable to get data for district {} using {}'.format(
-                    district, voters_ids
-                ))
+                log.error(
+                    'Unable to get data for district #{} using {}'.format(
+                        district, voters_ids
+                    )
+                )
                 unscrapped_data[district] = voters_ids
 
     return scrapped_data, unscrapped_data

@@ -99,8 +99,9 @@ def download(url, subdir=None):
     total = 0
     with NamedTemporaryFile(**tmpopts) as fd:
         with tqdm(
-                total=size, unit='B', unit_scale=True,
-                leave=True, desc=filename) as pbar:
+            total=size, unit='B', unit_scale=True, ascii=True,
+            leave=True, desc=filename
+        ) as pbar:
             for block in response.iter_content(chunk_size=CHUNK_SIZE):
                 bytes_read = len(block)
                 total += bytes_read
@@ -169,8 +170,9 @@ def unzip(filename):
 
         # Progress bar
         with tqdm(
-                total=size, unit='B', unit_scale=True,
-                leave=True, desc=basename(filename)) as pbar:
+            total=size, unit='B', unit_scale=True, ascii=True,
+            leave=True, desc=basename(filename)
+        ) as pbar:
 
             # Extract each member
             for member in members:

@@ -150,8 +150,9 @@ def write_provinces(fd, provinces):
     fd.write(opening_statement)
 
     with tqdm(
-            total=len(provinces), unit='e', leave=True,
-            desc='INSERT INTO province') as pbar:
+        total=len(provinces), unit='e', leave=True, ascii=True,
+        desc='INSERT INTO province'
+    ) as pbar:
 
         for province_code, name in provinces.items():
             fd.write('(')
@@ -178,8 +179,9 @@ def write_cantons(fd, cantons):
     fd.write(opening_statement)
 
     with tqdm(
-            total=len(cantons), unit='e', leave=True,
-            desc='INSERT INTO canton') as pbar:
+        total=len(cantons), unit='e', leave=True, ascii=True,
+        desc='INSERT INTO canton'
+    ) as pbar:
 
         for (province_code, canton_code), name in cantons.items():
             fd.write('(')
@@ -210,8 +212,9 @@ def write_districts(fd, districts):
     fd.write(opening_statement)
 
     with tqdm(
-            total=len(districts), unit='e', leave=True,
-            desc='INSERT INTO district') as pbar:
+        total=len(districts), unit='e', leave=True, ascii=True,
+        desc='INSERT INTO district'
+    ) as pbar:
 
         for num, ((province_code, canton_code, district_code), name) \
                 in enumerate(districts.items()):
@@ -250,8 +253,9 @@ def write_voters(fd, voters):
     fd.write(opening_statement)
 
     with tqdm(
-            total=voters.total_voters, unit='v', leave=True,
-            unit_scale=True, desc='INSERT INTO voter') as pbar:
+        total=voters.total_voters, unit='v', leave=True, ascii=True,
+        unit_scale=True, desc='INSERT INTO voter'
+    ) as pbar:
 
         for num, voter in enumerate(voters):
 
@@ -320,8 +324,9 @@ def write_mysql_scrapper(fd, data):
     fd.write('SET AUTOCOMMIT=0;\n')
 
     with tqdm(
-            total=len(data), unit='e', leave=True,
-            unit_scale=True, desc='UPDATE district') as pbar:
+        total=len(data), unit='e', leave=True, ascii=True,
+        unit_scale=True, desc='UPDATE district'
+    ) as pbar:
 
         for district, extras in data.items():
             fd.write(update_statement.format(
