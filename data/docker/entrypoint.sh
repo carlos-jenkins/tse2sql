@@ -50,4 +50,4 @@ echo ""
 
 
 echo "Finished initialization ..."
-exec "/bin/bash"
+exec "$@"

@@ -5,91 +5,89 @@ pipeline {
         stage('Build') {
 
             agent {
-                label 'ephemeral-slave'
+                docker {
+                    image 'kuralabs/mivotico-tse2sql:latest'
+                    args '--init'
+                }
             }
 
             steps {
-                script {
-                    try {
-                        container('mivotico-tse2sql') {
-                            sh '''#!/usr/bin/env bash
+                sh '''#!/usr/bin/env bash
 
-                            set -o errexit
-                            set -o nounset
-                            set -o xtrace
+                set -o errexit
+                set -o nounset
+                set -o xtrace
 
-                            echo "Installing tse2sql ..."
-                            tox -e build
-                            pip3 install dist/tse2sql-*.whl
+                echo "Executing entrypoint ..."
+                entrypoint.sh
 
-                            SOURCE_URL=http://www.tse.go.cr/zip/padron/padron_completo.zip
-                            ARCHIVE_URL=https://archive.kuralabs.io/mivotico/tse2sql
+                echo "Installing tse2sql ..."
+                tox -e build
+                pip3 install dist/tse2sql-*.whl
 
-                            mkdir datasrc
-                            pushd datasrc
+                SOURCE_URL=http://www.tse.go.cr/zip/padron/padron_completo.zip
+                ARCHIVE_URL=https://archive.kuralabs.io/mivotico/tse2sql
 
-                            echo "Downloading new data source ..."
-                            curl --output padron.zip "${SOURCE_URL}"
+                mkdir datasrc
+                pushd datasrc
 
-                            echo "Calculating data hash ..."
-                            DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
+                echo "Downloading new data source ..."
+                curl --output padron.zip "${SOURCE_URL}"
 
-                            echo "Data hash : ${DATA_HASH}"
-                            echo "{" > latest.json
-                            echo "    \\"latest\\": \\"${DATA_HASH}\\"," >> latest.json
-                            echo "    \\"date\\": \\"$(TZ=America/Costa_Rica date --iso-8601=min)\\"" >> latest.json
-                            echo "}" >> latest.json
+                echo "Calculating data hash ..."
+                DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
 
-                            echo "Checking archive for ${DATA_HASH} ..."
-                            DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}/${DATA_HASH}/${DATA_HASH}.zip" | grep "404 Not Found" || true)
+                echo "Data hash : ${DATA_HASH}"
+                echo "{" > latest.json
+                echo "    \\"latest\\": \\"${DATA_HASH}\\"," >> latest.json
+                echo "    \\"date\\": \\"$(TZ=America/Costa_Rica date --iso-8601=min)\\"" >> latest.json
+                echo "}" >> latest.json
 
-                            if [ -z "${DATA_AVAILABLE}" ]; then
-                                echo "Data source ${DATA_HASH} already processed. Exiting ..."
-                                rm padron.zip
-                                exit 0
-                            fi
+                echo "Checking archive for ${DATA_HASH} ..."
+                DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}/${DATA_HASH}/${DATA_HASH}.zip" | grep "404 Not Found" || true)
 
-                            echo "New data source ${DATA_HASH}. Processing ..."
-                            mkdir "${DATA_HASH}"
-                            pushd "${DATA_HASH}"
-                            mv ../padron.zip "${DATA_HASH}.zip"
-                            tse2sql "${DATA_HASH}.zip"
+                if [ -z "${DATA_AVAILABLE}" ]; then
+                    echo "Data source ${DATA_HASH} already processed. Exiting ..."
+                    rm padron.zip
+                    exit 0
+                fi
 
-                            echo "Removing extracted data ..."
-                            rm -r "${DATA_HASH}"
+                echo "New data source ${DATA_HASH}. Processing ..."
+                mkdir "${DATA_HASH}"
+                pushd "${DATA_HASH}"
+                mv ../padron.zip "${DATA_HASH}.zip"
+                tse2sql "${DATA_HASH}.zip"
 
-                            echo "Base data collected. Starting scrapper ..."
-                            tse2sql-scrapper "${DATA_HASH}.samples.json"
+                echo "Removing extracted data ..."
+                rm -r "${DATA_HASH}"
 
-                            echo "Creating credentials file for MySQL ..."
-                            echo -e "[client]\nuser=root\npassword=defaultrootpwd" > ~/.my.cnf
+                echo "Base data collected. Starting scrapper ..."
+                tse2sql-scrapper "${DATA_HASH}.samples.json"
 
-                            echo "Inserting new data into database ..."
-                            echo "SET @start := NOW(); source ${DATA_HASH}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
+                echo "Creating credentials file for MySQL ..."
+                echo -e "[client]\nuser=root\npassword=defaultrootpwd" > ~/.my.cnf
 
-                            echo "Inserting scrapped data into database ..."
-                            echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
+                echo "Inserting new data into database ..."
+                echo "SET @start := NOW(); source ${DATA_HASH}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
-                            echo "Compressing MySQL data for archival ..."
-                            tar -zcvf "${DATA_HASH}.mysql.tar.gz" "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
-                            rm "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
+                echo "Inserting scrapped data into database ..."
+                echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
-                            echo "Executing the data bulldozer ..."
-                            pip3 install -r ./../../tools/bulldozer/requirements.txt
-                            ./../../tools/bulldozer/bulldozer
+                echo "Compressing MySQL data for archival ..."
+                tar -zcvf "${DATA_HASH}.mysql.tar.gz" "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
+                rm "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
 
-                            echo "Compressing MongoDB data for archival ..."
-                            mongodump --archive="${DATA_HASH}.mongodb.gz" --gzip --db tse2sql
+                echo "Executing the data bulldozer ..."
+                pip3 install -r ./../../tools/bulldozer/requirements.txt
+                ./../../tools/bulldozer/bulldozer
 
-                            popd
-                            popd
-                            '''
-                            stash name: 'data', includes: 'datasrc/**/*'
-                        }
-                    } finally {
-                        containerLog 'mivotico-tse2sql'
-                    }
-                }
+                echo "Compressing MongoDB data for archival ..."
+                mongodump --archive="${DATA_HASH}.mongodb.gz" --gzip --db tse2sql
+
+                popd
+                popd
+                '''
+                stash name: 'data', includes: 'datasrc/**/*'
             }
         }
 
