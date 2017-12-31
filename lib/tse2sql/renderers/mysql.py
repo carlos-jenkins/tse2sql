@@ -132,9 +132,6 @@ SECTION_HEADER = """\
 """
 
 FOOTER = """\
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 CREATE INDEX `site` ON `voter` (`site` ASC);
 
@@ -153,6 +150,8 @@ BEGIN
         ORDER BY id_district, site ASC;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET district_done = TRUE;
 
+    SET AUTOCOMMIT=0;
+
     OPEN district_cursor;
     district_loop: LOOP
         FETCH district_cursor INTO district_id, site_id;
@@ -167,7 +166,7 @@ BEGIN
             SET code = ( SELECT @counter := @counter + 1 )
             WHERE district_id_district = district_id AND site = site_id
             ORDER BY family_name_1, family_name_2, name ASC;
-
+        COMMIT;
     END LOOP;
     CLOSE district_cursor;
 END;
@@ -176,6 +175,10 @@ END;
 DELIMITER ;
 
 CALL ASSIGN_CODES();
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 """
 
 
