@@ -12,7 +12,7 @@ from bson.decimal128 import Decimal128
 
 
 BASE_QUERY = (
-    'SELECT id_voter, name, family_name_1, family_name_2, sex, '
+    'SELECT id_voter, name, family_name_1, family_name_2, code, sex, '
     'id_expiration, name_province, name_canton, name_district, site, '
     'voting_center_name, voting_center_address, '
     'voting_center_latitude, voting_center_longitude '
@@ -62,6 +62,7 @@ def flat_data(mysql, mongo):
             #     'name': 'Jose',
             #     'family_name_1': 'Apellido1',
             #     'family_name_2': 'Apellido2',
+            #     'code': 42,
             #     'sex': 1,  # <- 1 -> Female, 2 -> Male
             #     'id_expiration': datetime.date(2023, 11, 19),
             #     'name_province': 'San Jose',
