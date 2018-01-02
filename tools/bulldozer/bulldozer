@@ -3,29 +3,49 @@
 # The bulldozer is a script that consumes a TSE MySQL database and flats and
 # denormalized the data into a MongoDB database.
 
-from datetime import datetime, time
-
-from pymongo import MongoClient
 from pymysql import connect, cursors
 from setproctitle import setproctitle
 from bson.decimal128 import Decimal128
-
-
-BASE_QUERY = (
-    'SELECT id_voter, name, family_name_1, family_name_2, code, sex, '
-    'id_expiration, name_province, name_canton, name_district, site, '
-    'voting_center_name, voting_center_address, '
-    'voting_center_latitude, voting_center_longitude '
-    'FROM voter '
-    'JOIN district ON voter.district_id_district = district.id_district '
-    'JOIN canton ON district.canton_id_canton = canton.id_canton '
-    'JOIN province ON canton.province_id_province = province.id_province '
-    'ORDER BY id_voter ASC;'
+from pymongo import (
+    MongoClient,
+    TEXT as INDEX_TEXT,
+    ASCENDING as INDEX_ASCENDING,
 )
 
 
+BASE_QUERY = """\
+SELECT
+    id_voter, code, site,
+    CONCAT_WS(' ', name, family_name_1, family_name_2) AS full_name,
+    id_province, voting_center_name, voting_center_address,
+    CONCAT_WS(', ', name_district, name_canton, name_province) AS voting_center_location,
+    voting_center_latitude, voting_center_longitude
+FROM voter
+JOIN district ON voter.district_id_district = district.id_district
+JOIN canton ON district.canton_id_canton = canton.id_canton
+JOIN province ON canton.province_id_province = province.id_province
+ORDER BY id_voter ASC;
+"""  # noqa
+
+
 def flat_data(mysql, mongo):
-    flatdb = mongo.tse2sql.voters
+    """
+    Row is in the form of::
+
+        {
+            'id_voter': 100920539,
+            'code': 17,
+            'site': 1070,
+            'full_name': 'Marta Villalta Cascante',
+            'id_province': 1,
+            'voting_center_name': 'Hogar De Ancianos Corteza Amarilla',
+            'voting_center_address': 'De la clinica catolica 100 este y 75 norte',
+            'voting_center_location': 'H.A. Corteza Amarilla Emmanuel, Goicoechea, San Jose',
+            'voting_center_latitude': Decimal128('9.948460'),
+            'voting_center_longitude': Decimal128('-84.057370'),
+        }
+    """  # noqa
+    voters = mongo.tse2sql.voters
 
     print('Creating cursor ...')
     with mysql.cursor() as cursor:
@@ -41,11 +61,6 @@ def flat_data(mysql, mongo):
 
             row['_id'] = row['id_voter']
 
-            # MongoDB doesn't support a date data type, convert to datetime
-            row['id_expiration'] = datetime.combine(
-                row['id_expiration'], time.min
-            )
-
             # Convert Decimals to bson Decimal128
             for key in ['voting_center_latitude', 'voting_center_longitude']:
 
@@ -55,28 +70,7 @@ def flat_data(mysql, mongo):
                     continue
                 row[key] = Decimal128(row[key])
 
-            # Row is in the form of:
-            #
-            # {
-            #     'id_voter': 112121212,
-            #     'name': 'Jose',
-            #     'family_name_1': 'Apellido1',
-            #     'family_name_2': 'Apellido2',
-            #     'code': 42,
-            #     'sex': 1,  # <- 1 -> Female, 2 -> Male
-            #     'id_expiration': datetime.date(2023, 11, 19),
-            #     'name_province': 'San Jose',
-            #     'name_canton': 'Santa Ana',
-            #     'name_district': 'Piedades',
-            #     'site': 1220,
-            #     'voting_center_name': 'Escuela Ezequiel Morales Aguilar',
-            #     'voting_center_address': 'Costado sur de iglesia catolica',
-            #     'voting_center_latitude': Decimal('9.928517'),
-            #     'voting_center_longitude': Decimal('-84.217010'),
-            #     '_id': 100339724
-            # }
-
-            inserted_id = flatdb.insert_one(row).inserted_id
+            inserted_id = voters.insert_one(row).inserted_id
 
             row_count += 1
             if (row_count % 1000) == 0:
@@ -87,6 +81,26 @@ def flat_data(mysql, mongo):
         print('Flattening finished with ID {} at iteration {}!'.format(
             inserted_id, row_count
         ))
+
+        # https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/#option-for-collation
+        # Requires Mongo 3.4 plus:
+        #     "The collation option is available for all index types except
+        #      for text indexes."
+        # Query me with:
+        #     results = list(voters.find(
+        #         {'$text': {'$search': search_term}}
+        #     ).sort('full_name', pymongo.ASCENDING).skip(1).limit(10))
+        print('Creating text index on full_name ...')
+        voters.create_index(
+            [('full_name', INDEX_TEXT)],
+            name='search_name'
+        )
+
+        print('Creating ascending index on id_province ...')
+        voters.create_index(
+            [('id_province', INDEX_ASCENDING)],
+            name='filter_province'
+        )
 
 
 def main():
