@@ -73,9 +73,28 @@ pipeline {
                 echo "Inserting scrapped data into database ..."
                 echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
+                echo "Assigning code to voters ..."
+                echo "SET @start := NOW(); USE tse2sql; CALL ASSIGN_CODES(); SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
+
+                echo "Exporting final MySQL database for archival ..."
+                mysqldump tse2sql > "${DATA_HASH}.final.mysql.sql"
+
                 echo "Compressing MySQL data for archival ..."
-                tar -zcvf "${DATA_HASH}.mysql.tar.gz" "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
-                rm "${DATA_HASH}.mysql.sql" "${DATA_HASH}.scrapped.mysql.sql"
+                tar -zcvf \
+                    "${DATA_HASH}.mysql.tar.gz" \
+                    "${DATA_HASH}.mysql.sql" \
+                    "${DATA_HASH}.scrapped.mysql.sql" \
+                    "${DATA_HASH}.final.mysql.sql"
+                rm \
+                    "${DATA_HASH}.mysql.sql" \
+                    "${DATA_HASH}.scrapped.mysql.sql" \
+                    "${DATA_HASH}.final.mysql.sql"
+
+                echo "Building names lookup table for production ..."
+                echo "SET @start := NOW(); USE tse2sql; CALL CREATE_NAMES_LOOKUP(); SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
+
+                echo "Exporting names lookup table ..."
+                mysqldump tse2sql voter_names_lookup | gzip > "${DATA_HASH}.lookup.mysql.sql.gz"
 
                 echo "Executing the data bulldozer ..."
                 pip3 install -r ./../../tools/bulldozer/requirements.txt

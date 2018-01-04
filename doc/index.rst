@@ -158,7 +158,7 @@ use the following query:
 .. code-block:: mysql
 
     SELECT id_voter, name, family_name_1, family_name_2, sex, id_expiration,
-        name_province, name_canton, name_district, site,
+        name_province, name_canton, name_district, site, code,
         voting_center_name, voting_center_address,
         voting_center_latitude, voting_center_longitude
     FROM voter
@@ -175,7 +175,7 @@ matching res):
 .. code-block:: mysql
 
     SELECT id_voter, name, family_name_1, family_name_2, sex, id_expiration,
-        name_province, name_canton, name_district, site,
+        name_province, name_canton, name_district, site, code,
         voting_center_name, voting_center_address,
         voting_center_latitude, voting_center_longitude
     FROM voter
@@ -195,8 +195,8 @@ To implement the full search, MySQL uses Boolean logic, in which
     [no operator] implies OR
 
 The minimum default token size in InnoDB is 3 characters and the indexing
-engine ignores words shorter than this minimum size, then when the length of
-the token is minor than 3 no operator should be added to get more accurate
+engine ignores words shorter than this minimum size. When the length of
+the token is less than 3 no operator should be added to get more accurate
 results.
 
 
@@ -224,7 +224,7 @@ License
 
 ::
 
-   Copyright (C) 2016-2017 KuraLabs S.R.L
+   Copyright (C) 2016-2018 KuraLabs S.R.L
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
