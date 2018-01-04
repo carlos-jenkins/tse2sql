@@ -3,21 +3,17 @@
 # The bulldozer is a script that consumes a TSE MySQL database and flats and
 # denormalized the data into a MongoDB database.
 
+from pymongo import MongoClient
 from pymysql import connect, cursors
 from setproctitle import setproctitle
 from bson.decimal128 import Decimal128
-from pymongo import (
-    MongoClient,
-    TEXT as INDEX_TEXT,
-    ASCENDING as INDEX_ASCENDING,
-)
 
 
 BASE_QUERY = """\
 SELECT
     id_voter, code, site,
     CONCAT_WS(' ', name, family_name_1, family_name_2) AS full_name,
-    id_province, voting_center_name, voting_center_address,
+    voting_center_name, voting_center_address,
     CONCAT_WS(', ', name_district, name_canton, name_province) AS voting_center_location,
     voting_center_latitude, voting_center_longitude
 FROM voter
@@ -37,7 +33,6 @@ def flat_data(mysql, mongo):
             'code': 17,
             'site': 1070,
             'full_name': 'Marta Villalta Cascante',
-            'id_province': 1,
             'voting_center_name': 'Hogar De Ancianos Corteza Amarilla',
             'voting_center_address': 'De la clinica catolica 100 este y 75 norte',
             'voting_center_location': 'H.A. Corteza Amarilla Emmanuel, Goicoechea, San Jose',
@@ -81,26 +76,6 @@ def flat_data(mysql, mongo):
         print('Flattening finished with ID {} at iteration {}!'.format(
             inserted_id, row_count
         ))
-
-        # https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/#option-for-collation
-        # Requires Mongo 3.4 plus:
-        #     "The collation option is available for all index types except
-        #      for text indexes."
-        # Query me with:
-        #     results = list(voters.find(
-        #         {'$text': {'$search': search_term}}
-        #     ).sort('full_name', pymongo.ASCENDING).skip(1).limit(10))
-        print('Creating text index on full_name ...')
-        voters.create_index(
-            [('full_name', INDEX_TEXT)],
-            name='search_name'
-        )
-
-        print('Creating ascending index on id_province ...')
-        voters.create_index(
-            [('id_province', INDEX_ASCENDING)],
-            name='filter_province'
-        )
 
 
 def main():
