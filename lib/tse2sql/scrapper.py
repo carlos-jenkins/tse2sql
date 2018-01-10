@@ -24,11 +24,11 @@ from json import dumps
 from logging import getLogger
 from traceback import format_exc
 from collections import OrderedDict
+from urllib.parse import urlparse, parse_qs
 
 from tqdm import tqdm
 from requests import post
 from inflection import titleize, humanize
-from urllib.parse import urlparse, parse_qs
 
 
 log = getLogger(__name__)
@@ -42,10 +42,18 @@ SCRAPPER_URL = (
 def parse_location(url):
     """
     Parse latitude and longitude from a Google Maps URL.
+
+    URL is in the form:
+
+        https://maps.google.com/maps/ms?...&ll=9.029795,-83.299043&...
+
+    Sometimes there is a weird ll query param like this:
+
+        https://maps.google.com/maps/ms?...&ll=9.029795, -83.299043,255&...
     """
     params = parse_qs(urlparse(url).query, keep_blank_values=True)
     if 'll' in params:
-        return tuple(float(c) for c in params.get('ll')[0].split(','))
+        return tuple(float(c) for c in params.get('ll')[0].split(','))[0:2]
     return (0.0, 0.0)
 
 
