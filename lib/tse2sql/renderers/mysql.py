@@ -248,6 +248,27 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 """
 
+SCRAPPER_HEADER = """\
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+USE `tse2sql`;
+
+"""
+
+SCRAPPER_FOOTER = """\
+
+ALTER TABLE voter
+    ADD CONSTRAINT fk_id_site FOREIGN KEY (id_site)
+    REFERENCES site_per_voting_center(id_site);
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+"""
+
 
 def write_provinces(fd, provinces):
     """
@@ -359,7 +380,7 @@ def write_voters(fd, voters):
     opening_statement = (
         'SET AUTOCOMMIT=0;\n'
         'INSERT INTO `voter` ('
-        '`id_voter`, `sex`, `id_expiration`, `site`, `name`, '
+        '`id_voter`, `sex`, `id_expiration`, `id_site`, `name`, '
         '`family_name_1`, `family_name_2`, `district_id_district`'
         ') VALUES\n'
     )
@@ -425,34 +446,89 @@ def write_mysql_scrapper(fd, data):
     :param fd: Output file descriptor.
     :param dict data: Scrapped data.
     """
-    update_statement = (
-        'UPDATE `district` SET '
-        '`voting_center_name` = \'{}\', '
-        '`voting_center_address` = \'{}\', '
-        '`voting_center_latitude` = {:9.6f}, '
-        '`voting_center_longitude` = {:9.6f} '
-        'WHERE `id_district` = {};\n'
-    )
 
-    fd.write(SECTION_HEADER.format(name='district'))
-    fd.write('USE `tse2sql` ;\n')
-    fd.write('SET AUTOCOMMIT=0;\n')
+    fd.write(SCRAPPER_HEADER)
+
+    # First table
+    opening_statement = """\
+SET AUTOCOMMIT=0;
+INSERT INTO `voting_center` (
+    `id_voting_center`, `name`, `address`,
+    `latitude`, `longitude`,
+    `district_id_district`
+) VALUES
+"""
+    fd.write(SECTION_HEADER.format(name='voting_center'))
+    fd.write(opening_statement)
 
     with tqdm(
         total=len(data), unit='e', leave=True, ascii=True,
-        unit_scale=True, desc='UPDATE district'
+        unit_scale=True, desc='INSERT INTO voting_center'
     ) as pbar:
 
-        for district, extras in data.items():
-            fd.write(update_statement.format(
-                extras['name'].replace("'", "\\'"),
-                extras['address'].replace("'", "\\'"),
-                extras['latitude'], extras['longitude'],
-                district
-            ))
+        for num, ((id_district, name), fields) in enumerate(data.items()):
+
+            if num % 1000 == 0 and num > 0:
+                fd.seek(fd.tell() - 2)
+                fd.write(';\nCOMMIT;\n\n\n')
+                fd.write(opening_statement)
+
+            fd.write('(')
+            fd.write(str(fields['id_voting_center']))
+            fd.write(', \'')
+            fd.write(name.replace("'", "\\'"))
+            fd.write('\', \'')
+            fd.write(fields['address'].replace("'", "\\'"))
+            fd.write('\', ')
+            fd.write(str(fields['latitude']))
+            fd.write(', ')
+            fd.write(str(fields['longitude']))
+            fd.write(', ')
+            fd.write(str(id_district))
+            fd.write('),\n')
             pbar.update(1)
 
-    fd.write('COMMIT;\n')
+    fd.seek(fd.tell() - 2)
+    fd.write(';\nCOMMIT;\n\n\n')
+
+    # Second table
+    opening_statement = """\
+SET AUTOCOMMIT=0;
+INSERT INTO `site_per_voting_center` (
+    `id_site`, `voting_center_id_voting_center`
+) VALUES
+"""
+    fd.write(SECTION_HEADER.format(name='site_per_voting_center'))
+    fd.write(opening_statement)
+
+    with tqdm(
+        total=len(data), unit='e', leave=True, ascii=True,
+        unit_scale=True, desc='INSERT INTO site_per_voting_center'
+    ) as pbar:
+
+        num = 0
+        for (id_district, name), fields in data.items():
+            for id_site in fields['id_sites']:
+
+                if num % 1000 == 0 and num > 0:
+                    num = 0
+                    fd.seek(fd.tell() - 2)
+                    fd.write(';\nCOMMIT;\n\n\n')
+                    fd.write(opening_statement)
+
+                fd.write('(')
+                fd.write(str(id_site))
+                fd.write(', ')
+                fd.write(str(fields['id_voting_center']))
+                fd.write('),\n')
+
+                num += 1
+            pbar.update(1)
+
+    fd.seek(fd.tell() - 2)
+    fd.write(';\nCOMMIT;\n\n\n')
+
+    fd.write(SCRAPPER_FOOTER)
 
 
 __all__ = ['write_mysql', 'write_mysql_scrapper']

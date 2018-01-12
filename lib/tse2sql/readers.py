@@ -294,14 +294,15 @@ class VotersReader(object):
                 )
                 assert district_key in self._distelec.districts
 
-                # FIXME: Shall we perform some other assert here to validate
-                # data?
+                # Validate site id
+                id_site = parsed['site']
+                assert id_site > 0
 
                 # Include sample if not present
-                if district_code not in self.samples:
-                    self.samples[district_code] = [parsed['id']]
-                elif len(self.samples[district_code]) < 3:
-                    self.samples[district_code].append(parsed['id'])
+                if id_site not in self.samples:
+                    self.samples[id_site] = [parsed['id']]
+                elif len(self.samples[id_site]) < 3:
+                    self.samples[id_site].append(parsed['id'])
 
                 return parsed
 
@@ -312,7 +313,7 @@ class VotersReader(object):
                         linenum, line
                     )
                 )
-                log.debug(format_exc())
+                log.error(format_exc())
                 continue
 
 

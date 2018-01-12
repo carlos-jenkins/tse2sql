@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2017 KuraLabs S.R.L
+# Copyright (C) 2016-2018 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ from time import sleep
 from json import dumps
 from logging import getLogger
 from traceback import format_exc
-from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs
+from collections import OrderedDict, Counter
 
 from tqdm import tqdm
 from requests import post
@@ -61,7 +61,8 @@ def scrappe_data(samples):
     """
     Scrapper main function.
 
-    :param dict samples: A dictionary with the ids samples.
+    :param dict samples: A dictionary with the id_site to ids samples map.
+
     :return: A dictionary with the scrapped data of the form.
     :rtype: dict
     """
@@ -70,14 +71,18 @@ def scrappe_data(samples):
     scrapped_data = OrderedDict()
     unscrapped_data = OrderedDict()
 
+    voting_centers_per_district = Counter()
+
     with tqdm(
         total=len(samples), unit='r', ascii=True, leave=True,
         desc='POST requests'
     ) as pbar:
 
         # Iterate samples to grab data from web service
-        for district, voters_ids in samples.items():
+        for id_key in sorted(samples.keys()):
 
+            id_site = int(id_key)
+            voters_ids = samples[id_key]
             num_sample_voters = len(voters_ids)
 
             retries = 10
@@ -96,43 +101,74 @@ def scrappe_data(samples):
 
                     data = response.json()['d']['lista']
 
-                    latitude, longitude = parse_location(data['url'])
-                    address = humanize(
-                        data['direccionEscuela'].strip().lower()
-                    )
+                    # Check data
+                    assert data
+                    assert data['junta'] == id_site
+
+                    # Fetch data
+                    id_district = data['codElectoral']
+
                     name = titleize(
                         data['nombreCentroVotacion'].strip().lower()
                     )
+                    address = humanize(
+                        data['direccionEscuela'].strip().lower()
+                    )
+
+                    # Check for varchar overflow
+                    if len(name) > 100:
+                        log.warning(
+                            'Name will overflow the column '
+                            '"name": {}'.format(name)
+                        )
+                    if len(address) > 100:
+                        log.warning(
+                            'Name will overflow the column '
+                            '"address": {}'.format(address)
+                        )
+
+                    latitude, longitude = parse_location(data['url'])
 
                     # Record data
-                    scrapped_data[district] = {
-                        'latitude': latitude,
-                        'longitude': longitude,
-                        'address': address,
-                        'name': name
-                    }
+                    unique = (id_district, name)
+                    if unique not in scrapped_data:
+
+                        # New voting center
+                        voting_centers_per_district[id_district] += 1
+                        id_voting_center = (id_district * 1000) + \
+                            voting_centers_per_district[id_district]
+
+                        scrapped_data[unique] = {
+                            'id_voting_center': id_voting_center,
+                            'id_sites': [id_site],
+                            'address': address,
+                            'latitude': latitude,
+                            'longitude': longitude,
+                        }
+                    else:
+                        scrapped_data[unique]['id_sites'].append(id_site)
 
                     pbar.update(1)
                     break
                 except Exception:
                     log.error(
-                        'Error while processing district #{} '
+                        'Error while processing site #{} '
                         'using voter id #{} :: (RETRIES LEFT: {})'.format(
-                            district, id_voter, retries
+                            id_site, id_voter, retries
                         )
                     )
-                    log.debug(format_exc())
+                    log.error(format_exc())
                     sleep(10)
 
                 retries -= 1
 
             else:
                 log.error(
-                    'Unable to get data for district #{} using {}'.format(
-                        district, voters_ids
+                    'Unable to get data for site #{} using {}'.format(
+                        id_site, voters_ids
                     )
                 )
-                unscrapped_data[district] = voters_ids
+                unscrapped_data[id_site] = voters_ids
 
     return scrapped_data, unscrapped_data
 
