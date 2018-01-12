@@ -179,10 +179,10 @@ BEGIN
     DECLARE site_id INT;
     DECLARE district_done INT DEFAULT FALSE;
     DECLARE district_cursor CURSOR FOR
-        SELECT DISTINCT id_district, site
+        SELECT DISTINCT id_district, id_site
         FROM district
             JOIN voter ON district.id_district = voter.district_id_district
-        ORDER BY id_district, site ASC;
+        ORDER BY id_district, id_site ASC;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET district_done = TRUE;
 
     SET AUTOCOMMIT=0;
@@ -199,7 +199,7 @@ BEGIN
         SET @counter := 0;
         UPDATE voter
             SET code = ( SELECT @counter := @counter + 1 )
-            WHERE district_id_district = district_id AND site = site_id
+            WHERE district_id_district = district_id AND id_site = site_id
             ORDER BY family_name_1, family_name_2, name ASC;
         COMMIT;
     END LOOP;
