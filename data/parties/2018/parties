@@ -89,6 +89,12 @@ parties = OrderedDict([
                 'primary': '#ed1b24',
                 'secondary': '#0065b3',
             },
+        }, {
+            'name': 'Vamos',
+            'colors': {
+                'primary': '#5c267f',
+                'secondary': '#f6a500',
+            },
         },
     ]
 ])
@@ -100,6 +106,7 @@ with open('parties.json', mode='wt', encoding='utf-8') as fd:
         indent=4,
         separators=(',', ': '),
         ensure_ascii=False,
+        sort_keys=True,
     )
     fd.write(content)
     print(content)

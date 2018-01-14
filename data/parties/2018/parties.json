@@ -1,93 +1,100 @@
 {
     "pac": {
-        "name": "Acción Ciudadana",
         "colors": {
-            "secondary": "#fef200",
-            "primary": "#ed1b34"
-        }
+            "primary": "#ed1b34",
+            "secondary": "#fef200"
+        },
+        "name": "Acción Ciudadana"
     },
     "padc": {
-        "name": "Alianza Demócrata Cristiana",
         "colors": {
-            "secondary": "#fecc17",
-            "primary": "#0055a5"
-        }
+            "primary": "#0055a5",
+            "secondary": "#fecc17"
+        },
+        "name": "Alianza Demócrata Cristiana"
     },
     "pase": {
-        "name": "Accesibilidad sin Exclusión",
         "colors": {
-            "secondary": "#ffffff",
-            "primary": "#0062a8"
-        }
+            "primary": "#0062a8",
+            "secondary": "#ffffff"
+        },
+        "name": "Accesibilidad sin Exclusión"
     },
     "pdlt": {
-        "name": "De los Trabajadores",
         "colors": {
-            "secondary": "#fef200",
-            "primary": "#da2127"
-        }
+            "primary": "#da2127",
+            "secondary": "#fef200"
+        },
+        "name": "De los Trabajadores"
     },
     "pfa": {
-        "name": "Frente Amplio",
         "colors": {
-            "secondary": "#000000",
-            "primary": "#f6ed08"
-        }
+            "primary": "#f6ed08",
+            "secondary": "#000000"
+        },
+        "name": "Frente Amplio"
     },
     "pin": {
-        "name": "Integración Nacional",
         "colors": {
-            "secondary": "#74beea",
-            "primary": "#006cb7"
-        }
+            "primary": "#006cb7",
+            "secondary": "#74beea"
+        },
+        "name": "Integración Nacional"
     },
     "pln": {
-        "name": "Liberación Nacional",
         "colors": {
-            "secondary": "#ffffff",
-            "primary": "#00a850"
-        }
+            "primary": "#00a850",
+            "secondary": "#ffffff"
+        },
+        "name": "Liberación Nacional"
     },
     "pml": {
-        "name": "Movimiento Libertario",
         "colors": {
-            "secondary": "#ffffff",
-            "primary": "#d91e25"
-        }
+            "primary": "#d91e25",
+            "secondary": "#ffffff"
+        },
+        "name": "Movimiento Libertario"
     },
     "png": {
-        "name": "Nueva Generación",
         "colors": {
-            "secondary": "#de612d",
-            "primary": "#0064b3"
-        }
+            "primary": "#0064b3",
+            "secondary": "#de612d"
+        },
+        "name": "Nueva Generación"
     },
     "prc": {
-        "name": "Renovación Costarricense",
         "colors": {
-            "secondary": "#ffffff",
-            "primary": "#0072bb"
-        }
+            "primary": "#0072bb",
+            "secondary": "#ffffff"
+        },
+        "name": "Renovación Costarricense"
     },
     "prn": {
-        "name": "Restauración Nacional",
         "colors": {
-            "secondary": "#fee800",
-            "primary": "#0072bb"
-        }
+            "primary": "#0072bb",
+            "secondary": "#fee800"
+        },
+        "name": "Restauración Nacional"
     },
     "prsc": {
-        "name": "Republicano Social Cristiano",
         "colors": {
-            "secondary": "#fff200",
-            "primary": "#26247b"
-        }
+            "primary": "#26247b",
+            "secondary": "#fff200"
+        },
+        "name": "Republicano Social Cristiano"
     },
     "pusc": {
-        "name": "Unidad Social Cristiana",
         "colors": {
-            "secondary": "#0065b3",
-            "primary": "#ed1b24"
-        }
+            "primary": "#ed1b24",
+            "secondary": "#0065b3"
+        },
+        "name": "Unidad Social Cristiana"
+    },
+    "pv": {
+        "colors": {
+            "primary": "#5c267f",
+            "secondary": "#f6a500"
+        },
+        "name": "Vamos"
     }
 }
