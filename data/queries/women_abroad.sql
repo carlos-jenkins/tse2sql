@@ -5,9 +5,9 @@ JOIN province ON canton.province_id_province = province.id_province
 WHERE province.id_province = 8 and voter.sex = 2;
 
 /*
-+-------------------+
-| Men Abroad Voters |
-+-------------------+
-|             15336 |
-+-------------------+
++---------------------+
+| Women Abroad Voters |
++---------------------+
+|               15336 |
++---------------------+
 */
