@@ -1,9 +1,10 @@
-SELECT count(*) as 'Women', province.name_province
+SELECT COUNT(*) AS 'Women', province.name_province
 FROM voter
 JOIN district ON voter.district_id_district = district.id_district
 JOIN canton ON district.canton_id_canton = canton.id_canton
 JOIN province ON canton.province_id_province = province.id_province
-AND voter.sex = 2 GROUP BY province.name_province
+AND voter.sex = 2
+GROUP BY province.name_province
 ORDER BY Women DESC;
 
 /*

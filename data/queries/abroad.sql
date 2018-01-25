@@ -1,4 +1,4 @@
-SELECT count(*) FROM voter
+SELECT COUNT(*) FROM voter
 JOIN district ON voter.district_id_district = district.id_district
 JOIN canton ON district.canton_id_canton = canton.id_canton
 JOIN province ON canton.province_id_province = province.id_province
