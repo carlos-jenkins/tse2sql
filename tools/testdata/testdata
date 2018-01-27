@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+
+import logging
+from random import randint, shuffle
+
+from requests import get
+from pprintpp import pprint
+from colorlog import ColoredFormatter
+
+
+FORMAT = (
+    '  %(log_color)s%(levelname)-8s%(reset)s | '
+    '%(log_color)s%(message)s%(reset)s'
+)
+V_LEVELS = {
+    0: logging.ERROR,
+    1: logging.WARNING,
+    2: logging.INFO,
+    3: logging.DEBUG,
+}
+
+
+MIVOTICO_URL = 'http://localhost:5000/voter/id/{}'
+
+
+log = logging.getLogger(__name__)
+
+
+def parse_args(argv=None):
+    """
+    Argument parsing routine.
+
+    :param argv: A list of argument strings.
+    :type argv: list
+
+    :return: A parsed and verified arguments namespace.
+    :rtype: :py:class:`argparse.Namespace`
+    """
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(
+        description=(
+            'TSE REST API Client Tool'
+        )
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        help='Increase verbosity level',
+        default=0,
+        action='count'
+    )
+    parser.add_argument(
+        '--number',
+        help='Number of voters to generate',
+        default=10,
+        type=int,
+    )
+
+    args = parser.parse_args(argv)
+    args = validate_args(args)
+    return args
+
+
+def validate_args(args):
+    """
+    Validate that arguments are valid.
+
+    :param args: An arguments namespace.
+    :type args: :py:class:`argparse.Namespace`
+
+    :return: The validated namespace.
+    :rtype: :py:class:`argparse.Namespace`
+    """
+    stream = logging.StreamHandler()
+    stream.setFormatter(ColoredFormatter(FORMAT))
+
+    level = V_LEVELS.get(args.verbose, logging.DEBUG)
+    logging.basicConfig(handlers=[stream], level=level)
+
+    log.debug('Raw arguments: {}'.format(args))
+
+    return args
+
+
+def main(args):
+    """
+    Main function.
+
+    Uses passed ids in args to query the TSE REST API.
+    """
+    ids_pool = []
+    names1_pool = []
+    names2_pool = []
+    family1_pool = []
+    family2_pool = []
+
+    print('Generating random data', end='', flush=True)
+
+    while len(ids_pool) < args.number or len(names1_pool) < args.number:
+        random_id = randint(100000000, 800000000)
+        response = get(MIVOTICO_URL.format(random_id))
+        print('.', end='', flush=True)
+
+        if response.status_code == 404:
+            ids_pool.append(random_id)
+        else:
+            try:
+                full_name = response.json()['full_name']
+                name1, name2, family1, family2 = full_name.split(' ')
+
+                names1_pool.append(name1)
+                names2_pool.append(name2)
+                family1_pool.append(family1)
+                family2_pool.append(family2)
+
+            except Exception:
+                pass
+    print('')
+
+    print('Shuffling...')
+    shuffle(names1_pool)
+    shuffle(names2_pool)
+    shuffle(family1_pool)
+    shuffle(family2_pool)
+
+    print('Joining...')
+    test_data = []
+    for idnum, name1, name2, family1, family2 in zip(
+        ids_pool, names1_pool, names2_pool, family1_pool, family2_pool
+    ):
+        test_data.append({
+            'id_voter': idnum,
+            'full_name': ' '.join((name1, name2, family1, family2))
+        })
+
+    print('Sorting...')
+    test_data.sort(key=lambda v: v['id_voter'])
+
+    print('DONE!')
+    pprint(test_data)
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    exit(main(args))
