@@ -88,13 +88,16 @@ def main(args):
 
     Uses passed ids in args to query the TSE REST API.
     """
+    fake_search = ('Maria', 'Perez')
+    fake_full_name = 'Maria Perez Rojas'
+
     ids_pool = []
     names1_pool = []
     names2_pool = []
     family1_pool = []
     family2_pool = []
 
-    print('Generating random data', end='', flush=True)
+    print('Generating random data ', end='', flush=True)
 
     while len(ids_pool) < args.number or len(names1_pool) < args.number:
         random_id = randint(100000000, 800000000)
@@ -117,24 +120,41 @@ def main(args):
                 pass
     print('')
 
-    print('Shuffling...')
+    print('Shuffling ...')
     shuffle(names1_pool)
     shuffle(names2_pool)
     shuffle(family1_pool)
     shuffle(family2_pool)
 
-    print('Joining...')
+    print('Joining ...')
     test_data = []
     for idnum, name1, name2, family1, family2 in zip(
         ids_pool, names1_pool, names2_pool, family1_pool, family2_pool
     ):
+        if randint(0, 1):
+            name1 = fake_search[0]
+        else:
+            name2 = fake_search[0]
+
+        if randint(0, 1):
+            family1 = fake_search[1]
+        else:
+            family2 = fake_search[1]
+
         test_data.append({
             'id_voter': idnum,
             'full_name': ' '.join((name1, name2, family1, family2))
         })
 
-    print('Sorting...')
-    test_data.sort(key=lambda v: v['id_voter'])
+    print('Inserting fake ...')
+    random_insert = randint(0, len(test_data))
+    test_data[random_insert] = {
+        'full_name': fake_full_name,
+        'id_voter': test_data[random_insert]['id_voter'],
+    }
+
+    print('Sorting ...')
+    test_data.sort(key=lambda v: v['full_name'])
 
     print('DONE!')
     pprint(test_data)

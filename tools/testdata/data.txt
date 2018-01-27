@@ -1,0 +1,26 @@
+    voter = {
+        'id_voter': 101020304,
+        'full_name': 'Maria Perez Rojas',
+        'site': 2869,
+        'code': 42,
+        'voting_center_name': 'Liceo Manuel Benavides Rodriguez',
+        'voting_center_address': 'Del Hospital San Vicente, 300mts suroeste',
+        'voting_center_location': 'San Francisco, Central, Heredia',
+        'voting_center_latitude': 9.992026,
+        'voting_center_longitude': -84.124138,
+    }
+    return web.json_response(voter, dumps=dumps)
+
+
+    return web.json_response({'results': [
+        {'full_name': 'Allan Maria Granados Perez', 'id_voter': 400475877},
+        {'full_name': 'Jose Maria Perez Ledezma', 'id_voter': 323258449},
+        {'full_name': 'Lency Maria Perez Villalobos', 'id_voter': 589484138},
+        {'full_name': 'Maria Cecilia Perez Blanco', 'id_voter': 758503640},
+        {'full_name': 'Maria Francini Perez Barquero', 'id_voter': 659820923},
+        {'full_name': 'Maria Fernanda Perez Ruiz', 'id_voter': 465710147},
+        {'full_name': 'Maria Perez Rojas', 'id_voter': 101020304},
+        {'full_name': 'Maria Vanessa Perez Hidalgo', 'id_voter': 251566666},
+        {'full_name': 'Ronier Maria Bolaños Perez', 'id_voter': 339771295},
+        {'full_name': 'Sharon Maria Araya Perez', 'id_voter': 690087610},
+    ]}, dumps=dumps)
