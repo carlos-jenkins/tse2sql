@@ -18,9 +18,6 @@ pipeline {
                 set -o nounset
                 set -o xtrace
 
-                echo "Executing entrypoint ..."
-                entrypoint.sh
-
                 echo "Installing tse2sql ..."
                 tox -e build
                 pip3 install dist/tse2sql-*.whl
