@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "ce122ef3-4824-4c65-9291-7ddbfc3a42a9",
+		"name": "TSE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ObtenerDondeVotar",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"numeroCedula\": \"113460645\"\n}"
+				},
+				"url": {
+					"raw": "{{API}}ObtenerDondeVotar",
+					"host": [
+						"{{API}}ObtenerDondeVotar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ObtenerUrls",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}"
+				},
+				"url": {
+					"raw": "{{API}}ObtenerUrls",
+					"host": [
+						"{{API}}ObtenerUrls"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ObtenerHoraServidor",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}"
+				},
+				"url": {
+					"raw": "{{API}}ObtenerHoraServidor",
+					"host": [
+						"{{API}}ObtenerHoraServidor"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "6411306e-ce82-48ac-af3d-fa525358b59c",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "ee3c55e3-5679-4151-82dd-60b71b6aac77",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "c9cd7be4-6df2-4c72-bd01-8d5027b8dbaf",
+			"key": "API",
+			"value": "http://consultadondevotar.tse.go.cr/dondevotarM/prRemoto.aspx/",
+			"type": "string"
+		}
+	]
+}
