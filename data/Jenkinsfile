@@ -32,7 +32,7 @@ pipeline {
 
                 echo "Calculating data hash ..."
                 DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
-                TIMESTAMP=$(TZ=America/Costa_Rica date --iso-8601=min)
+                TIMESTAMP=$(date +%s)
 
                 echo "Data hash : ${DATA_HASH}"
                 echo "{" > latest.json
