@@ -23,7 +23,6 @@ pipeline {
                 pip3 install dist/tse2sql-*.whl
 
                 SOURCE_URL=http://www.tse.go.cr/zip/padron/padron_completo.zip
-                ARCHIVE_URL=https://archive.kuralabs.io/mivotico/tse2sql
 
                 mkdir datasrc
                 pushd datasrc
@@ -33,72 +32,57 @@ pipeline {
 
                 echo "Calculating data hash ..."
                 DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
+                TIMESTAMP=$(TZ=America/Costa_Rica date --iso-8601=min)
 
                 echo "Data hash : ${DATA_HASH}"
                 echo "{" > latest.json
                 echo "    \\"latest\\": \\"${DATA_HASH}\\"," >> latest.json
-                echo "    \\"date\\": \\"$(TZ=America/Costa_Rica date --iso-8601=min)\\"" >> latest.json
+                echo "    \\"date\\": \\"${TIMESTAMP}\\"" >> latest.json
                 echo "}" >> latest.json
 
-                echo "Checking archive for ${DATA_HASH} ..."
-                DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}/${DATA_HASH}/${DATA_HASH}.zip" | grep "404 Not Found" || true)
-
-                if [ -z "${DATA_AVAILABLE}" ]; then
-                    echo "Data source ${DATA_HASH} already processed. Exiting ..."
-                    rm padron.zip
-                    exit 0
-                fi
-
-                echo "New data source ${DATA_HASH}. Processing ..."
-                mkdir "${DATA_HASH}"
-                pushd "${DATA_HASH}"
-                mv ../padron.zip "${DATA_HASH}.zip"
-                tse2sql "${DATA_HASH}.zip"
+                echo "New data source ${TIMESTAMP}. Processing ..."
+                mkdir "${TIMESTAMP}"
+                pushd "${TIMESTAMP}"
+                mv ../padron.zip "${TIMESTAMP}.zip"
+                tse2sql "${TIMESTAMP}.zip"
 
                 echo "Removing extracted data ..."
-                rm -r "${DATA_HASH}"
+                rm -r "${TIMESTAMP}"
 
                 echo "Base data collected. Starting scrapper ..."
-                tse2sql-scrapper "${DATA_HASH}.samples.json"
+                tse2sql-scrapper "${TIMESTAMP}.samples.json"
 
                 echo "Creating credentials file for MySQL ..."
                 echo -e "[client]\nuser=root\npassword=defaultrootpwd" > ~/.my.cnf
 
                 echo "Inserting new data into database ..."
-                echo "SET @start := NOW(); source ${DATA_HASH}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
+                echo "SET @start := NOW(); source ${TIMESTAMP}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
                 echo "Inserting scrapped data into database ..."
-                echo "SET @start := NOW(); source ${DATA_HASH}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
+                echo "SET @start := NOW(); source ${TIMESTAMP}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
                 echo "Assigning code to voters ..."
                 echo "SET @start := NOW(); USE tse2sql; CALL ASSIGN_CODES(); SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
                 echo "Exporting final MySQL database for archival ..."
-                mysqldump tse2sql > "${DATA_HASH}.final.mysql.sql"
+                mysqldump tse2sql > "${TIMESTAMP}.final.mysql.sql"
 
                 echo "Compressing MySQL data for archival ..."
                 tar -zcvf \
-                    "${DATA_HASH}.mysql.tar.gz" \
-                    "${DATA_HASH}.mysql.sql" \
-                    "${DATA_HASH}.scrapped.mysql.sql" \
-                    "${DATA_HASH}.final.mysql.sql"
+                    "${TIMESTAMP}.mysql.tar.gz" \
+                    "${TIMESTAMP}.mysql.sql" \
+                    "${TIMESTAMP}.scrapped.mysql.sql" \
+                    "${TIMESTAMP}.final.mysql.sql"
                 rm \
-                    "${DATA_HASH}.mysql.sql" \
-                    "${DATA_HASH}.scrapped.mysql.sql" \
-                    "${DATA_HASH}.final.mysql.sql"
+                    "${TIMESTAMP}.mysql.sql" \
+                    "${TIMESTAMP}.scrapped.mysql.sql" \
+                    "${TIMESTAMP}.final.mysql.sql"
 
                 echo "Building names lookup table for production ..."
                 echo "SET @start := NOW(); USE tse2sql; CALL CREATE_NAMES_LOOKUP(); SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
 
                 echo "Exporting names lookup table ..."
-                mysqldump tse2sql voter_names_lookup | gzip > "${DATA_HASH}.lookup.mysql.sql.gz"
-
-                echo "Executing the data bulldozer ..."
-                pip3 install -r ./../../tools/bulldozer/requirements.txt
-                ./../../tools/bulldozer/bulldozer
-
-                echo "Compressing MongoDB data for archival ..."
-                mongodump --archive="${DATA_HASH}.mongodb.gz" --gzip --db tse2sql
+                mysqldump tse2sql voter_names_lookup | gzip > "${TIMESTAMP}.lookup.mysql.sql.gz"
 
                 popd
                 popd
