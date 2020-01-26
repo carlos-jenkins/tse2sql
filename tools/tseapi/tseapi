@@ -21,7 +21,7 @@ V_LEVELS = {
 
 
 SCRAPPER_URL = (
-    'http://consultadondevotar.tse.go.cr/dondevotarM/prRemoto.aspx/ObtenerDondeVotar'
+    'https://www.tse.go.cr/dondevotarM/prRemoto.aspx/ObtenerDondeVotar'
 )
 HEADERS = {'Content-Type': 'application/json'}
 

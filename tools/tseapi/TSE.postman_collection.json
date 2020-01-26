@@ -107,7 +107,7 @@
 		{
 			"id": "c9cd7be4-6df2-4c72-bd01-8d5027b8dbaf",
 			"key": "API",
-			"value": "http://consultadondevotar.tse.go.cr/dondevotarM/prRemoto.aspx/",
+			"value": "https://www.tse.go.cr/dondevotarM/prRemoto.aspx/",
 			"type": "string"
 		}
 	]

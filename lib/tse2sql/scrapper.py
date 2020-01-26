@@ -35,7 +35,7 @@ log = getLogger(__name__)
 
 
 SCRAPPER_URL = (
-    'http://www.tse.go.cr/dondevotarp/prRemoto.aspx/ObtenerDondeVotar'
+    'https://www.tse.go.cr/dondevotarM/prRemoto.aspx/ObtenerDondeVotar'
 )
 
 
