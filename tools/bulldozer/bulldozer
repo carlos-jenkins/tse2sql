@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # The bulldozer is a script that consumes a TSE MySQL database and flats and
-# denormalized the data into a MongoDB database.
+# denormalize the data into a MongoDB database.
 
 from pymongo import MongoClient
 from pymysql import connect, cursors
