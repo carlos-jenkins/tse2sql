@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2017 KuraLabs S.R.L
+# Copyright (C) 2016-2020 KuraLabs S.R.L
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@
 Application entry point module.
 """
 
-from os import extsep
-from os.path import basename
+from pathlib import Path
 from json import dumps, loads
 from logging import getLogger
 from datetime import datetime
@@ -28,7 +27,7 @@ from datetime import datetime
 from setproctitle import setproctitle
 
 from .scrapper import scrappe_data
-from .utils import is_url, download, sha256, unzip
+from .utils import is_url, download, unzip
 from .readers import DistrictsReader, VotersReader
 from .render import list_renderers, render, render_scrapped
 
@@ -56,8 +55,8 @@ def main(args):
         archive = download(archive, subdir='tse2sql')
 
     # Calculate digest and unzip archive
-    digest = sha256(archive)
     extracted = unzip(archive)
+    filename = Path(archive).stem
 
     # Parse distelec file
     distelec = DistrictsReader(extracted)
@@ -66,7 +65,7 @@ def main(args):
     # Save analysis file
     analysis = dumps(distelec.analyse(), sort_keys=True, indent=4)
     log.info('Distelec analysis:\n{}'.format(analysis))
-    with open('{}.data.json'.format(digest), 'w') as fd:
+    with open('{}.data.json'.format(filename), 'w') as fd:
         fd.write(analysis)
 
     # Open voters file
@@ -81,7 +80,6 @@ def main(args):
 
     # Build rendering payload
     payload = {
-        'digest': digest,
         'provinces': distelec.provinces,
         'cantons': distelec.cantons,
         'districts': distelec.districts,
@@ -91,11 +89,11 @@ def main(args):
     # Generate SQL output
     for rdr in renderers:
         print('Writing output for {} ...'.format(rdr))
-        with open('{}.{}.sql'.format(digest, rdr), 'w') as sqlfile:
+        with open('{}.{}.sql'.format(filename, rdr), 'w') as sqlfile:
             render(payload, rdr, sqlfile)
 
     # Write samples files
-    with open('{}.samples.json'.format(digest), 'w') as samplesfile:
+    with open('{}.samples.json'.format(filename), 'w') as samplesfile:
         samplesfile.write(dumps(voters.samples, indent=4))
 
     # Log elapsed time
@@ -126,7 +124,7 @@ def main_scrapper(args):
         renderers = [args.renderer]
 
     # Grab user data
-    digest, ext = (basename(args.samples).split(extsep, 1))
+    filename = Path(args.samples).stem
     with open(args.samples) as fd:
         samples = loads(fd.read())
 
@@ -136,12 +134,12 @@ def main_scrapper(args):
     # Generate SQL output
     for rdr in renderers:
         print('Writing output for {} ...'.format(rdr))
-        with open('{}.scrapped.{}.sql'.format(digest, rdr), 'w') as sqlfile:
+        with open('{}.scrapped.{}.sql'.format(filename, rdr), 'w') as sqlfile:
             render_scrapped(scrapped_data, rdr, sqlfile)
 
     # Generate JSON output of unscrapped data
     with open(
-            '{}.unscrapped.json'.format(digest),
+            '{}.unscrapped.json'.format(filename),
             mode='wt', encoding='utf-8'
     ) as unscrappedfd:
         unscrappedfd.write(
