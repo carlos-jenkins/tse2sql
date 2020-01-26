@@ -60,7 +60,7 @@ is published will be used, currently:
 
 ::
 
-    http://www.tse.go.cr/zip/padron/padron_completo.zip
+    https://www.tse.go.cr/zip/padron/padron_completo.zip
 
 A local path to a ``.zip`` file can also be used to avoid download of the
 database if it is already in the local system.
@@ -109,7 +109,7 @@ Currently there is a web service available at:
 
 .. code-block:: text
 
-    http://www.tse.go.cr/dondevotarp/prRemoto.aspx/ObtenerDondeVotar
+    https://www.tse.go.cr/dondevotarM/prRemoto.aspx/ObtenerDondeVotar
 
 That allows to grab this information as following:
 

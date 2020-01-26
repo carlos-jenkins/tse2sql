@@ -22,7 +22,7 @@ pipeline {
                 tox -e build
                 pip3 install dist/tse2sql-*.whl
 
-                SOURCE_URL=http://www.tse.go.cr/zip/padron/padron_completo.zip
+                SOURCE_URL=https://www.tse.go.cr/zip/padron/padron_completo.zip
 
                 mkdir datasrc
                 pushd datasrc

@@ -33,7 +33,7 @@ from .utils import get_file, count_lines
 log = getLogger(__name__)
 
 
-REGISTRY_URL = 'http://www.tse.go.cr/zip/padron/padron_completo.zip'
+REGISTRY_URL = 'https://www.tse.go.cr/zip/padron/padron_completo.zip'
 
 
 class DistrictsReader(object):
