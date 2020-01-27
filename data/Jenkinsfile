@@ -116,8 +116,13 @@ pipeline {
 
                 echo "Cleaning up workspace ..."
 
-                rm "csv/${DATA_HASH}/*.json"
-                rm "csv/${DATA_HASH}/*.sql"
+                rm "csv/${DATA_HASH}/${DATA_HASH}.data.json"
+                rm "csv/${DATA_HASH}/${DATA_HASH}.samples.json"
+                rm "csv/${DATA_HASH}/${DATA_HASH}.mysql.sql"
+
+                rm "web/${TIMESTAMP}/${TIMESTAMP}.input.json"
+                rm "web/${TIMESTAMP}/${TIMESTAMP}.unscrapped.json"
+                rm "web/${TIMESTAMP}/${TIMESTAMP}.scrapped.mysql.sql"
 
                 mv "web/${TIMESTAMP}/${TIMESTAMP}.input.json" latest.json
 
