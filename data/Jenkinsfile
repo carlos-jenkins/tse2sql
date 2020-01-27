@@ -72,7 +72,7 @@ pipeline {
                         "${DATA_HASH}.samples.json"
 
                     echo "Removing source data ..."
-                    rm "${DATA_HASH}.zip"
+                    rm -r "${DATA_HASH}" "${DATA_HASH}.zip"
                 fi
 
                 popd

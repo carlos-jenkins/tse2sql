@@ -20,6 +20,7 @@ Application entry point module.
 """
 
 from pathlib import Path
+from os.path import extsep
 from json import dumps, loads
 from logging import getLogger
 from datetime import datetime
@@ -124,7 +125,9 @@ def main_scrapper(args):
         renderers = [args.renderer]
 
     # Grab user data
-    filename = Path(args.samples).stem
+    # XXX: This ugly line is required, Python (as of 3.7) doesn't have a way to
+    #      obtain the true stem of a filename by removing all suffixes.
+    filename, _ = Path(args.samples).stem.split(extsep, 1)
     with open(args.samples) as fd:
         samples = loads(fd.read())
 
