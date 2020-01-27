@@ -101,8 +101,9 @@ pipeline {
                 echo "Compressing generated data for archival ..."
                 tar -zcvf \
                     "${TIMESTAMP}.tar.gz" \
-                    "${TIMESTAMP}.scrapped.mysql.sql" \
-                    "${TIMESTAMP}.input.json"
+                    "${TIMESTAMP}.input.json" \
+                    "${TIMESTAMP}.unscrapped.json" \
+                    "${TIMESTAMP}.scrapped.mysql.sql"
 
                 echo "Removing samples file ..."
                 rm "${TIMESTAMP}.samples.json"
