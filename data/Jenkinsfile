@@ -2,12 +2,11 @@ pipeline {
     agent none
 
     stages {
-        stage('Build') {
+        stage('Process') {
 
             agent {
                 docker {
-                    image 'kuralabs/mivotico-tse2sql:latest'
-                    args '--init'
+                    image 'kuralabs/python3-dev:latest'
                 }
             }
 
@@ -22,72 +21,110 @@ pipeline {
                 tox -e build
                 pip3 install dist/tse2sql-*.whl
 
+                mkdir ws
+                pushd ws
+
+                echo "===== CSV DATA SOURCE PROCESSING ====="
+
+                mkdir csv
+                pushd csv
+
                 SOURCE_URL=https://www.tse.go.cr/zip/padron/padron_completo.zip
-
-                mkdir datasrc
-                pushd datasrc
-
-                echo "Downloading new data source ..."
+                echo "Downloading currently published electoral roll from ${SOURCE_URL} ..."
                 curl --output padron.zip "${SOURCE_URL}"
 
                 echo "Calculating data hash ..."
                 DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
-                TIMESTAMP=$(date +%s)
-
                 echo "Data hash : ${DATA_HASH}"
-                echo "{" > latest.json
-                echo "    \\"latest\\": \\"${DATA_HASH}\\"," >> latest.json
-                echo "    \\"date\\": \\"${TIMESTAMP}\\"" >> latest.json
-                echo "}" >> latest.json
 
-                echo "New data source ${TIMESTAMP}. Processing ..."
+                mkdir "${DATA_HASH}"
+                pushd "${DATA_HASH}"
+
+                echo "Checking archive for ${DATA_HASH} ..."
+                ARCHIVE_URL="https://archive.kuralabs.io/mivotico/tse2sql/$(date +%Y)/csv/${DATA_HASH}/${DATA_HASH}.tar.gz"
+                DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}" | grep "404 Not Found" || true)
+
+                if [ -z "${DATA_AVAILABLE}" ]; then
+
+                    echo "Data source ${DATA_HASH} already processed. Will use archived results."
+
+                    echo "Removing source data ..."
+                    rm ../padron.zip
+
+                    echo "Downloading archived results from ${ARCHIVE_URL} ..."
+                    curl --output "${DATA_HASH}.tar.gz" "${ARCHIVE_URL}"
+
+                    echo "Extracting archived results from ${DATA_HASH}.tar.gz ..."
+                    tar -zxvf "${DATA_HASH}.tar.gz"
+
+                else
+
+                    echo "New data source ${DATA_HASH}. Processing ..."
+
+                    mv ../padron.zip "${DATA_HASH}.zip"
+                    tse2sql "${DATA_HASH}.zip"
+
+                    echo "Compressing generated data for archival ..."
+                    tar -zcvf \
+                        "${DATA_HASH}.tar.gz" \
+                        "${DATA_HASH}.mysql.sql" \
+                        "${DATA_HASH}.data.json" \
+                        "${DATA_HASH}.samples.json"
+
+                    echo "Removing source data ..."
+                    rm "${DATA_HASH}.zip"
+                fi
+
+                popd
+                popd
+
+                echo "===== WEB DATA SOURCE PROCESSING ====="
+
+                mkdir web
+                pushd web
+
+                TIMESTAMP=$(date +%s)
+                echo "Timestamp identifier for this session : ${TIMESTAMP} ..."
+
                 mkdir "${TIMESTAMP}"
                 pushd "${TIMESTAMP}"
-                mv ../padron.zip "${TIMESTAMP}.zip"
-                tse2sql "${TIMESTAMP}.zip"
 
-                echo "Removing extracted data ..."
-                rm -r "${TIMESTAMP}"
+                echo "Using ${DATA_HASH}.samples.json for this session. Renaming ..."
+                cp "../../csv/${DATA_HASH}/${DATA_HASH}.samples.json" "${TIMESTAMP}.samples.json"
 
-                echo "Base data collected. Starting scrapper ..."
+                echo "Starting scrapper using ${DATA_HASH}.samples.json ..."
                 tse2sql-scrapper "${TIMESTAMP}.samples.json"
 
-                echo "Creating credentials file for MySQL ..."
-                echo -e "[client]\nuser=root\npassword=defaultrootpwd" > ~/.my.cnf
+                echo "Recording input identifiers ..."
+                echo "{\\"sha256\\": \\"${DATA_HASH}\\", \\"timestamp\\": \\"${TIMESTAMP}\\"}" | python3 -m json.tool > "${TIMESTAMP}.input.json"
 
-                echo "Inserting new data into database ..."
-                echo "SET @start := NOW(); source ${TIMESTAMP}.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
-
-                echo "Inserting scrapped data into database ..."
-                echo "SET @start := NOW(); source ${TIMESTAMP}.scrapped.mysql.sql; SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
-
-                echo "Assigning code to voters ..."
-                echo "SET @start := NOW(); USE tse2sql; CALL ASSIGN_CODES(); SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
-
-                echo "Exporting final MySQL database for archival ..."
-                mysqldump tse2sql > "${TIMESTAMP}.final.mysql.sql"
-
-                echo "Compressing MySQL data for archival ..."
+                echo "Compressing generated data for archival ..."
                 tar -zcvf \
-                    "${TIMESTAMP}.mysql.tar.gz" \
-                    "${TIMESTAMP}.mysql.sql" \
+                    "${TIMESTAMP}.tar.gz" \
                     "${TIMESTAMP}.scrapped.mysql.sql" \
-                    "${TIMESTAMP}.final.mysql.sql"
-                rm \
-                    "${TIMESTAMP}.mysql.sql" \
-                    "${TIMESTAMP}.scrapped.mysql.sql" \
-                    "${TIMESTAMP}.final.mysql.sql"
+                    "${TIMESTAMP}.input.json"
 
-                echo "Building names lookup table for production ..."
-                echo "SET @start := NOW(); USE tse2sql; CALL CREATE_NAMES_LOOKUP(); SET @end := NOW(); SELECT TIMEDIFF(@end, @start);" | mysql
-
-                echo "Exporting names lookup table ..."
-                mysqldump tse2sql voter_names_lookup | gzip > "${TIMESTAMP}.lookup.mysql.sql.gz"
+                echo "Removing samples file ..."
+                rm "${TIMESTAMP}.samples.json"
 
                 popd
+                popd
+
+                echo "===== PREPARING DATA ARCHIVE ====="
+
+                echo "Cleaning up workspace ..."
+
+                rm "csv/${DATA_HASH}/*.json"
+                rm "csv/${DATA_HASH}/*.sql"
+
+                mv "web/${TIMESTAMP}/${TIMESTAMP}.input.json" latest.json
+
+                echo "Final data for archiving:"
+                tree
+
                 popd
                 '''
-                stash name: 'data', includes: 'datasrc/**/*'
+                stash name: 'data', includes: 'ws/**/*'
             }
         }
 
@@ -102,8 +139,8 @@ pipeline {
                     set -o xtrace
 
                     umask 022
-                    mkdir -p /deploy/archive/mivotico/tse2sql
-                    cp -R datasrc/* /deploy/archive/mivotico/tse2sql/
+                    mkdir -p "/deploy/archive/mivotico/tse2sql/$(date +%Y)"
+                    cp --no-clobber --recursive ws/* "/deploy/archive/mivotico/tse2sql/$(date +%Y)"
                 '''
             }
         }
