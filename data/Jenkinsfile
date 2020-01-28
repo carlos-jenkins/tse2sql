@@ -7,7 +7,6 @@ pipeline {
             agent {
                 docker {
                     image 'kuralabs/python3-dev:latest'
-                    args '-u root:root'
                 }
             }
 
@@ -114,17 +113,19 @@ pipeline {
 
                 echo "===== PREPARING DATA ARCHIVE ====="
 
+                echo "Tree before cleaning up ..."
+                tree
+
                 echo "Cleaning up workspace ..."
+                mv "web/${TIMESTAMP}/${TIMESTAMP}.input.json" latest.json
 
                 rm "csv/${DATA_HASH}/${DATA_HASH}.data.json"
                 rm "csv/${DATA_HASH}/${DATA_HASH}.samples.json"
                 rm "csv/${DATA_HASH}/${DATA_HASH}.mysql.sql"
 
-                rm "web/${TIMESTAMP}/${TIMESTAMP}.input.json"
                 rm "web/${TIMESTAMP}/${TIMESTAMP}.unscrapped.json"
                 rm "web/${TIMESTAMP}/${TIMESTAMP}.scrapped.mysql.sql"
 
-                mv "web/${TIMESTAMP}/${TIMESTAMP}.input.json" latest.json
 
                 echo "Final data for archiving:"
                 tree

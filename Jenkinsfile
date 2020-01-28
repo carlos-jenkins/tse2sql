@@ -6,7 +6,6 @@ pipeline {
             agent {
                 docker {
                     image 'kuralabs/python3-dev:latest'
-                    args '-u root:root'
                 }
             }
 
