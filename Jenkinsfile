@@ -1,19 +1,34 @@
 pipeline {
-    agent none
+    agent { label 'docker' }
+
+    environment {
+        ADJUST_USER_UID = sh(
+            returnStdout: true,
+            script: 'id -u'
+        ).trim()
+        ADJUST_USER_GID = sh(
+            returnStdout: true,
+            script: 'id -g'
+        ).trim()
+        ADJUST_DOCKER_GID = sh(
+            returnStdout: true,
+            script: 'getent group docker | cut -d: -f3'
+        ).trim()
+    }
 
     stages {
         stage('Build') {
             agent {
                 docker {
+                    alwaysPull true
                     image 'kuralabs/python3-dev:latest'
+                    args '-u root:root'
                 }
             }
 
             steps {
                 sh '''
-                    tox -e build
-                    tox -e test
-                    tox -e doc
+                sudo --user=python3 --set-home tox --recreate
                 '''
                 stash name: 'docs', includes: '.tox/env/tmp/html/**/*'
             }
@@ -21,7 +36,10 @@ pipeline {
 
         stage('Publish') {
             agent { label 'docs' }
-            when { branch 'master' }
+            when {
+                beforeAgent true
+                branch 'master'
+            }
             steps {
                 unstash 'docs'
                 sh '''

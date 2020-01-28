@@ -27,7 +27,7 @@ from urllib.parse import urlparse, parse_qs
 from collections import OrderedDict, Counter
 
 from tqdm import tqdm
-from requests import post
+from requests import Session
 from inflection import titleize, humanize
 
 
@@ -67,6 +67,8 @@ def scrappe_data(samples):
     :rtype: dict
     """
 
+    session = Session()
+
     headers = {'Content-Type': 'application/json'}
     scrapped_data = OrderedDict()
     unscrapped_data = OrderedDict()
@@ -92,7 +94,7 @@ def scrappe_data(samples):
                 payload = dumps({'numeroCedula': str(id_voter)})
 
                 try:
-                    response = post(
+                    response = session.post(
                         SCRAPPER_URL,
                         headers=headers,
                         data=payload

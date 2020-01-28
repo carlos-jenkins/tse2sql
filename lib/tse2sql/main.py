@@ -42,6 +42,7 @@ def main(args):
 
     :param args: An arguments namespace.
     :type args: :py:class:`argparse.Namespace`
+
     :return: Exit code.
     :rtype: int
     """
@@ -110,6 +111,7 @@ def main_scrapper(args):
 
     :param args: An arguments namespace.
     :type args: :py:class:`argparse.Namespace`
+
     :return: Exit code.
     :rtype: int
     """

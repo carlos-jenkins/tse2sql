@@ -1,137 +1,83 @@
 pipeline {
-    agent none
+    agent { label 'docker' }
+
+    parameters {
+        string(
+            name: 'FORCE_DATA_HASH',
+            defaultValue: '',
+            description: 'Use given archived DATA_HASH instead of ' +
+                'processing a new one'
+        )
+        string(
+            name: 'FORCE_TIMESTAMP',
+            defaultValue: '',
+            description: 'Use given archived TIMESTAMP instead of ' +
+                'processing a new one'
+        )
+    }
+
+    environment {
+        FORCE_DATA_HASH = "${params.FORCE_DATA_HASH}"
+        FORCE_TIMESTAMP = "${params.FORCE_TIMESTAMP}"
+        ADJUST_USER_UID = sh(
+            returnStdout: true,
+            script: 'id -u'
+        ).trim()
+        ADJUST_USER_GID = sh(
+            returnStdout: true,
+            script: 'id -g'
+        ).trim()
+        ADJUST_DOCKER_GID = sh(
+            returnStdout: true,
+            script: 'getent group docker | cut -d: -f3'
+        ).trim()
+    }
 
     stages {
         stage('Process') {
-
             agent {
                 docker {
+                    alwaysPull true
                     image 'kuralabs/python3-dev:latest'
+                    args '-u root:root'
                 }
             }
 
             steps {
-                sh '''#!/usr/bin/env bash
-
-                set -o errexit
-                set -o nounset
-                set -o xtrace
-
-                echo "Installing tse2sql ..."
-                tox -e build
-                pip3 install dist/tse2sql-*.whl
-
-                mkdir ws
-                pushd ws
-
-                echo "===== CSV DATA SOURCE PROCESSING ====="
-
-                mkdir csv
-                pushd csv
-
-                SOURCE_URL=https://www.tse.go.cr/zip/padron/padron_completo.zip
-                echo "Downloading currently published electoral roll from ${SOURCE_URL} ..."
-                curl --output padron.zip "${SOURCE_URL}"
-
-                echo "Calculating data hash ..."
-                DATA_HASH=$(sha256sum --binary padron.zip | cut -d' ' -f 1)
-                echo "Data hash : ${DATA_HASH}"
-
-                mkdir "${DATA_HASH}"
-                pushd "${DATA_HASH}"
-
-                echo "Checking archive for ${DATA_HASH} ..."
-                ARCHIVE_URL="https://archive.kuralabs.io/mivotico/tse2sql/$(date +%Y)/csv/${DATA_HASH}/${DATA_HASH}.tar.gz"
-                DATA_AVAILABLE=$(curl --silent --head "${ARCHIVE_URL}" | grep "404 Not Found" || true)
-
-                if [ -z "${DATA_AVAILABLE}" ]; then
-
-                    echo "Data source ${DATA_HASH} already processed. Will use archived results."
-
-                    echo "Removing source data ..."
-                    rm ../padron.zip
-
-                    echo "Downloading archived results from ${ARCHIVE_URL} ..."
-                    curl --output "${DATA_HASH}.tar.gz" "${ARCHIVE_URL}"
-
-                    echo "Extracting archived results from ${DATA_HASH}.tar.gz ..."
-                    tar -zxvf "${DATA_HASH}.tar.gz"
-
-                else
-
-                    echo "New data source ${DATA_HASH}. Processing ..."
-
-                    mv ../padron.zip "${DATA_HASH}.zip"
-                    tse2sql "${DATA_HASH}.zip"
-
-                    echo "Compressing generated data for archival ..."
-                    tar -zcvf \
-                        "${DATA_HASH}.tar.gz" \
-                        "${DATA_HASH}.mysql.sql" \
-                        "${DATA_HASH}.data.json" \
-                        "${DATA_HASH}.samples.json"
-
-                    echo "Removing source data ..."
-                    rm -r "${DATA_HASH}" "${DATA_HASH}.zip"
-                fi
-
-                popd
-                popd
-
-                echo "===== WEB DATA SOURCE PROCESSING ====="
-
-                mkdir web
-                pushd web
-
-                TIMESTAMP=$(date +%s)
-                echo "Timestamp identifier for this session : ${TIMESTAMP} ..."
-
-                mkdir "${TIMESTAMP}"
-                pushd "${TIMESTAMP}"
-
-                echo "Using ${DATA_HASH}.samples.json for this session. Renaming ..."
-                cp "../../csv/${DATA_HASH}/${DATA_HASH}.samples.json" "${TIMESTAMP}.samples.json"
-
-                echo "Starting scrapper using ${DATA_HASH}.samples.json ..."
-                tse2sql-scrapper "${TIMESTAMP}.samples.json"
-
-                echo "Recording input identifiers ..."
-                echo "{\\"sha256\\": \\"${DATA_HASH}\\", \\"timestamp\\": \\"${TIMESTAMP}\\"}" | python3 -m json.tool > "${TIMESTAMP}.input.json"
-
-                echo "Compressing generated data for archival ..."
-                tar -zcvf \
-                    "${TIMESTAMP}.tar.gz" \
-                    "${TIMESTAMP}.input.json" \
-                    "${TIMESTAMP}.unscrapped.json" \
-                    "${TIMESTAMP}.scrapped.mysql.sql"
-
-                echo "Removing samples file ..."
-                rm "${TIMESTAMP}.samples.json"
-
-                popd
-                popd
-
-                echo "===== PREPARING DATA ARCHIVE ====="
-
-                echo "Tree before cleaning up ..."
-                tree
-
-                echo "Cleaning up workspace ..."
-                mv "web/${TIMESTAMP}/${TIMESTAMP}.input.json" latest.json
-
-                rm "csv/${DATA_HASH}/${DATA_HASH}.data.json"
-                rm "csv/${DATA_HASH}/${DATA_HASH}.samples.json"
-                rm "csv/${DATA_HASH}/${DATA_HASH}.mysql.sql"
-
-                rm "web/${TIMESTAMP}/${TIMESTAMP}.unscrapped.json"
-                rm "web/${TIMESTAMP}/${TIMESTAMP}.scrapped.mysql.sql"
-
-
-                echo "Final data for archiving:"
-                tree
-
-                popd
+                sh '''
+                sudo --user=python3 --preserve-env --set-home ./data/process.sh
                 '''
+                stash name: 'data', includes: 'ws/**/*'
+            }
+        }
+
+        stage('Finalize') {
+
+            steps {
+                unstash 'data'
+
+                script {
+                    def latest = readJSON file: 'ws/latest.json'
+
+                    docker.image('mysql:8.0').withRun(
+                        "-e MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+                    ) { container ->
+
+                        docker.image('mysql:8.0').inside(
+                            "--link ${container.id}:db"
+                        ) {
+                            withEnv([
+                                "DATA_HASH=${latest.sha256}",
+                                "TIMESTAMP=${latest.timestamp}",
+                            ]) {
+                                sh '''
+                                ./data/finalize.sh
+                                '''
+                            }
+                        }
+                    }
+                }
+
                 stash name: 'data', includes: 'ws/**/*'
             }
         }
@@ -141,14 +87,13 @@ pipeline {
             steps {
                 unstash 'data'
                 sh '''#!/usr/bin/env bash
+                set -o errexit
+                set -o nounset
+                set -o xtrace
 
-                    set -o errexit
-                    set -o nounset
-                    set -o xtrace
-
-                    umask 022
-                    mkdir -p "/deploy/archive/mivotico/tse2sql/$(date +%Y)"
-                    cp --no-clobber --recursive ws/* "/deploy/archive/mivotico/tse2sql/$(date +%Y)"
+                umask 022
+                mkdir -p "/deploy/archive/mivotico/tse2sql/$(date +%Y)"
+                cp --no-clobber --recursive ws/* "/deploy/archive/mivotico/tse2sql/$(date +%Y)"
                 '''
             }
         }
@@ -157,14 +102,16 @@ pipeline {
         success {
             slackSend (
                 color: '#00FF00',
-                message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+                message: ":sunny: SUCCESSFUL: " +
+                    "<${env.BUILD_URL}|[${env.BUILD_NUMBER}] ${env.JOB_NAME}>"
             )
         }
 
         failure {
             slackSend (
                 color: '#FF0000',
-                message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+                message: ":rain_cloud: FAILED: " +
+                    "<${env.BUILD_URL}|[${env.BUILD_NUMBER}] ${env.JOB_NAME}>"
             )
         }
     }
