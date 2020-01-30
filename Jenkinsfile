@@ -28,7 +28,7 @@ pipeline {
 
             steps {
                 sh '''
-                sudo --user=python3 --set-home tox --recreate
+                sudo --user=python3 --preserve-env --set-home tox --recreate
                 '''
                 stash name: 'docs', includes: '.tox/env/tmp/html/**/*'
             }
@@ -55,14 +55,16 @@ pipeline {
         success {
             slackSend (
                 color: '#00FF00',
-                message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+                message: ":sunny: SUCCESSFUL: " +
+                    "<${env.BUILD_URL}|[${env.BUILD_NUMBER}] ${env.JOB_NAME}>"
             )
         }
 
         failure {
             slackSend (
                 color: '#FF0000',
-                message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+                message: ":rain_cloud: FAILED: " +
+                    "<${env.BUILD_URL}|[${env.BUILD_NUMBER}] ${env.JOB_NAME}>"
             )
         }
     }
