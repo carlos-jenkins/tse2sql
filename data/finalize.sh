@@ -66,7 +66,7 @@ echo "
 " | mysql --host=db --user=root
 
 echo "Exporting normalized database for archival ..."
-mysqldump --host=db --user=root tse2sql |
+mysqldump --default-character-set=utf8mb4 --host=db --user=root tse2sql |
     gzip > "${DATA_HASH}+${TIMESTAMP}.normalized.mysql.sql.gz"
 
 
@@ -82,7 +82,7 @@ echo "
 " | mysql --host=db --user=root
 
 echo "Exporting denormalized database for archival ..."
-mysqldump --host=db --user=root tse2sql denormalized |
+mysqldump --default-character-set=utf8mb4 --host=db --user=root tse2sql denormalized |
     gzip > "${DATA_HASH}+${TIMESTAMP}.denormalized.mysql.sql.gz"
 
 
