@@ -223,6 +223,7 @@ BEGIN
     CREATE TABLE `tse2sql`.`denormalized` (
         `id_voter` INT UNSIGNED NOT NULL,
         `full_name` VARCHAR(84) NOT NULL,
+        `sex` TINYINT UNSIGNED NOT NULL,
         `code` INT NOT NULL,
         `id_site` MEDIUMINT UNSIGNED NULL,
         `id_province` TINYINT UNSIGNED NOT NULL,
@@ -244,6 +245,7 @@ BEGIN
     INSERT INTO `tse2sql`.`denormalized` (
         `id_voter`,
         `full_name`,
+        `sex`,
         `code`,
         `id_site`,
         `id_province`,
@@ -263,6 +265,7 @@ BEGIN
             `voter`.`family_name_1`,
             `voter`.`family_name_2`
         ) as `full_name`,
+        `voter`.`sex`,
         `voter`.`code`,
         `voter`.`id_site`,
         `province`.`id_province`,
